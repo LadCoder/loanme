@@ -18,8 +18,8 @@ import {
  */
 export const createTable = pgTableCreator((name) => `loanme_${name}`);
 
-export const posts = createTable(
-  "post",
+export const agreements = createTable(
+  "agreement",
   {
     id: integer("id").primaryKey().generatedByDefaultAsIdentity(),
     name: varchar("name", { length: 256 }),

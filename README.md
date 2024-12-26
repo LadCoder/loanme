@@ -4,7 +4,7 @@ This is a [T3 Stack](https://create.t3.gg/) project bootstrapped with `create-t3
 
 ## TODO:
 [x] Init app
-[] Setup database
+[x] Setup database
 [] Setup Auth
 [] Setup Loan model
 [] Setup Agreement
