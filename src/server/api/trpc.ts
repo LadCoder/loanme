@@ -1,9 +1,28 @@
 import { auth } from "@clerk/nextjs/server";
-import { type CreateNextContextOptions } from "@trpc/server/adapters/next";
+import { initTRPC, TRPCError } from "@trpc/server";
+import { db } from "../db";
 
-export const createTRPCContext = async (opts: CreateNextContextOptions) => {
-    const session = await auth();
+export const createTRPCContext = async (opts: { req: Request }) => {
+    const { userId } = await auth();
     return {
-        userId: session.userId,
+        db,
+        userId,
     };
 };
+
+const t = initTRPC.context<typeof createTRPCContext>().create();
+
+export const createTRPCRouter = t.router;
+export const publicProcedure = t.procedure;
+
+export const protectedProcedure = t.procedure.use(({ ctx, next }) => {
+    if (!ctx.userId) {
+        throw new TRPCError({ code: "UNAUTHORIZED" });
+    }
+    return next({
+        ctx: {
+            userId: ctx.userId,
+            db: ctx.db,
+        },
+    });
+});

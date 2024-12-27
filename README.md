@@ -5,9 +5,9 @@ This is a [T3 Stack](https://create.t3.gg/) project bootstrapped with `create-t3
 ## TODO:
 [x] Init app
 [x] Setup database
-[] Setup Auth
-[] Setup Loan model
-[] Setup Agreement
+[x] Setup Auth
+[x] Setup Loan model
+[x] Setup Agreement
 [] Build out interactions
 [] Setup repayment tracker
 [] Setup notifications
