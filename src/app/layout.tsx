@@ -15,9 +15,16 @@ import {
 } from "~/app/_components/ui/sidebar"
 
 export const metadata: Metadata = {
-  title: "LoanMe - Personal Loan Management",
-  description: "Track and manage personal loans with friends and family",
-  icons: [{ rel: "icon", url: "/favicon.ico" }],
+  title: "LoanMe",
+  description: "A simple and secure way to manage personal loans between friends and family",
+  icons: {
+    icon: [
+      {
+        url: "/favicon.svg",
+        type: "image/svg+xml",
+      },
+    ],
+  },
 };
 
 export default function RootLayout({

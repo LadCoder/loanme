@@ -21,11 +21,9 @@ import {
     BreadcrumbPage,
     BreadcrumbSeparator,
 } from "~/app/_components/ui/breadcrumb"
-
 import { Separator } from "~/app/_components/ui/separator"
 import { SidebarTrigger } from "~/app/_components/ui/sidebar"
 
-// Map of path segments to their icons
 const segmentIcons: Record<string, LucideIcon> = {
     loans: PiggyBank,
     borrowed: PiggyBank,
@@ -42,8 +40,6 @@ const segmentIcons: Record<string, LucideIcon> = {
 function Breadcrumbs() {
     const pathname = usePathname();
     const segments = pathname.split('/').filter(Boolean);
-
-    if (segments.length === 0) return null;
 
     const breadcrumbs = segments.map((segment, index) => {
         const href = `/${segments.slice(0, index + 1).join('/')}`;
@@ -73,6 +69,22 @@ function Breadcrumbs() {
             Icon,
         };
     });
+
+    // If we're on the homepage, show just the Overview breadcrumb
+    if (segments.length === 0) {
+        return (
+            <Breadcrumb>
+                <BreadcrumbList>
+                    <BreadcrumbItem>
+                        <BreadcrumbPage className="flex items-center gap-2">
+                            <Home className="h-4 w-4" />
+                            <span>Overview</span>
+                        </BreadcrumbPage>
+                    </BreadcrumbItem>
+                </BreadcrumbList>
+            </Breadcrumb>
+        );
+    }
 
     return (
         <Breadcrumb>
