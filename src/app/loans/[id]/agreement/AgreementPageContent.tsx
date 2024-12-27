@@ -1,15 +1,16 @@
 "use client";
 
 import React from "react";
-import { api } from "~/utils/api";
-import { Card, CardContent, CardHeader, CardTitle } from "~/app/_components/ui/card";
+import { api } from "../../../../utils/api";
+import { Card, CardContent, CardHeader, CardTitle } from "../../../_components/ui/card";
 import { useRouter } from "next/navigation";
 import { motion } from "framer-motion";
-import { AgreementForm } from "~/app/_components/AgreementForm";
-import { useToast } from "~/hooks/use-toast";
+import { AgreementForm } from "../../../_components/AgreementForm";
+import { useToast } from "../../../../hooks/use-toast";
 import { TRPCClientErrorLike } from '@trpc/client';
 import { Loader2 } from "lucide-react";
-import { Button } from "~/app/_components/ui/button";
+import { Button } from "../../../_components/ui/button";
+import { Currency } from "../../../_components/ui/currency";
 import { useEffect } from "react";
 
 interface Props {
@@ -124,7 +125,12 @@ export default function AgreementPageContent({ id }: Props) {
                             <div className="grid grid-cols-2 gap-4">
                                 <div>
                                     <h3 className="text-lg font-semibold">Loan Amount</h3>
-                                    <p className="text-2xl font-bold">{loan.amount} {loan.currency}</p>
+                                    <Currency
+                                        amount={loan.amount}
+                                        code={loan.currency as any}
+                                        className="text-2xl font-bold"
+                                        showCode
+                                    />
                                 </div>
                                 <div>
                                     <h3 className="text-lg font-semibold">Status</h3>
