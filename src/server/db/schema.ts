@@ -129,14 +129,6 @@ export const repayments = createTable("repayment", {
 
 // Relations
 export const loansRelations = relations(loans, ({ one, many }) => ({
-  lender: one(users, {
-    fields: [loans.lenderId],
-    references: [users.id],
-  }),
-  borrower: one(users, {
-    fields: [loans.borrowerId],
-    references: [users.id],
-  }),
   agreement: one(agreements, {
     fields: [loans.id],
     references: [agreements.loanId],

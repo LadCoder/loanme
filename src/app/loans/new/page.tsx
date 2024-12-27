@@ -4,25 +4,54 @@ import { useState } from "react";
 import { api } from "~/utils/api";
 import { Button } from "~/app/_components/ui/button";
 import { Input } from "~/app/_components/ui/input";
+import { useRouter } from "next/navigation";
+import { useToast } from "~/hooks/use-toast";
 
 export default function NewLoanPage() {
+    const router = useRouter();
+    const { toast } = useToast();
     const [amount, setAmount] = useState("");
     const [borrowerId, setBorrowerId] = useState("");
 
     const createLoan = api.loan.create.useMutation({
-        onSuccess: () => {
-            // Handle success (e.g., redirect to loan list)
-            console.log("Loan created successfully!");
+        onSuccess: (data) => {
+            if (!data?.id) {
+                toast({
+                    title: "Error",
+                    description: "Failed to get loan ID",
+                    variant: "destructive",
+                });
+                return;
+            }
+
+            toast({
+                title: "Success",
+                description: "Loan created successfully!",
+            });
+
+            // Use replace instead of push to avoid back button issues
+            router.replace(`/loans/${data.id}/agreement`);
+        },
+        onError: (error) => {
+            toast({
+                title: "Error",
+                description: error.message,
+                variant: "destructive",
+            });
         },
     });
 
-    const handleSubmit = (e: React.FormEvent) => {
+    const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
-        createLoan.mutate({
-            amount: parseFloat(amount),
-            borrowerId,
-            currency: "AUD"
-        });
+        try {
+            await createLoan.mutateAsync({
+                amount: parseFloat(amount),
+                borrowerId,
+                currency: "AUD"
+            });
+        } catch (error) {
+            console.error("Failed to create loan:", error);
+        }
     };
 
     return (
