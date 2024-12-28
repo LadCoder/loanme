@@ -106,7 +106,7 @@ export default async function HomePage() {
   };
 
   return (
-    <div className="container mx-auto space-y-6 py-6">
+    <div className="container mx-auto space-y-6 px-3 py-6 sm:px-6">
       <div className="flex items-center justify-between">
         <h1 className="text-3xl font-bold tracking-tight">Overview</h1>
         <Button asChild>
@@ -144,7 +144,7 @@ export default async function HomePage() {
               amount={totalLent}
               className="text-3xl font-bold tracking-tight"
               label={
-                <div className="flex items-center gap-4 text-sm">
+                <div className="flex flex-wrap items-center gap-x-4 gap-y-2 text-sm">
                   <div className="flex items-center gap-1.5">
                     <BadgeCheck className="h-4 w-4 text-success" />
                     <span>{activeLentLoans.length} Active</span>
@@ -189,7 +189,7 @@ export default async function HomePage() {
               amount={totalBorrowed}
               className="text-3xl font-bold tracking-tight"
               label={
-                <div className="flex items-center gap-4 text-sm">
+                <div className="flex flex-wrap items-center gap-x-4 gap-y-2 text-sm">
                   <div className="flex items-center gap-1.5">
                     <BadgeCheck className="h-4 w-4 text-success" />
                     <span>{activeBorrowedLoans.length} Active</span>
@@ -222,27 +222,27 @@ export default async function HomePage() {
                 href={`/loans/${loan.id}`}
                 className="flex items-center rounded-lg bg-background/50 p-3 transition-colors hover:bg-muted"
               >
-                <div className="flex items-center gap-3">
-                  <div className="rounded-md bg-primary/10 p-2">
+                <div className="flex flex-1 items-center gap-3">
+                  <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-md bg-primary/10">
                     <DollarSign className="h-4 w-4 text-primary" />
                   </div>
-                  <div className="grid gap-1">
+                  <div className="min-w-0 flex-1">
                     <Currency amount={loan.amount} className="text-sm font-medium leading-none" />
-                    <div className="flex items-center gap-1 text-xs text-muted-foreground">
+                    <div className="mt-1 flex items-center gap-1 text-xs text-muted-foreground">
                       <User className="h-3 w-3" />
-                      <span>{getUserName(loan.borrowerId)}</span>
+                      <span className="truncate">{getUserName(loan.borrowerId)}</span>
                     </div>
                   </div>
                 </div>
-                <div className="ml-6 grid gap-1 text-right">
-                  {getStatusDisplay(loan.status)}
-                  <div className="flex items-center gap-1 text-xs text-muted-foreground">
-                    <Calendar className="h-3 w-3" />
-                    <span>{formatDate(loan.createdAt)}</span>
+                <div className="ml-6 flex items-center gap-4">
+                  <div className="grid gap-1 text-right">
+                    {getStatusDisplay(loan.status)}
+                    <div className="flex items-center gap-1 text-xs text-muted-foreground">
+                      <Calendar className="h-3 w-3" />
+                      <span>{formatDate(loan.createdAt)}</span>
+                    </div>
                   </div>
-                </div>
-                <div className="ml-auto pl-4">
-                  <ArrowRight className="h-4 w-4" />
+                  <ArrowRight className="ml-2 h-4 w-4" />
                 </div>
               </Link>
             ))}
@@ -266,27 +266,27 @@ export default async function HomePage() {
                 href={`/loans/${loan.id}`}
                 className="flex items-center rounded-lg bg-background/50 p-3 transition-colors hover:bg-muted"
               >
-                <div className="flex items-center gap-3">
-                  <div className="rounded-md bg-primary/10 p-2">
+                <div className="flex flex-1 items-center gap-3">
+                  <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-md bg-primary/10">
                     <DollarSign className="h-4 w-4 text-primary" />
                   </div>
-                  <div className="grid gap-1">
+                  <div className="min-w-0 flex-1">
                     <Currency amount={loan.amount} className="text-sm font-medium leading-none" />
-                    <div className="flex items-center gap-1 text-xs text-muted-foreground">
+                    <div className="mt-1 flex items-center gap-1 text-xs text-muted-foreground">
                       <User className="h-3 w-3" />
-                      <span>{getUserName(loan.lenderId)}</span>
+                      <span className="truncate">{getUserName(loan.lenderId)}</span>
                     </div>
                   </div>
                 </div>
-                <div className="ml-6 grid gap-1 text-right">
-                  {getStatusDisplay(loan.status)}
-                  <div className="flex items-center gap-1 text-xs text-muted-foreground">
-                    <Calendar className="h-3 w-3" />
-                    <span>{formatDate(loan.createdAt)}</span>
+                <div className="ml-6 flex items-center gap-4">
+                  <div className="grid gap-1 text-right">
+                    {getStatusDisplay(loan.status)}
+                    <div className="flex items-center gap-1 text-xs text-muted-foreground">
+                      <Calendar className="h-3 w-3" />
+                      <span>{formatDate(loan.createdAt)}</span>
+                    </div>
                   </div>
-                </div>
-                <div className="ml-auto pl-4">
-                  <ArrowRight className="h-4 w-4" />
+                  <ArrowRight className="ml-2 h-4 w-4" />
                 </div>
               </Link>
             ))}
