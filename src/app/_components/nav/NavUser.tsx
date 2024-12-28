@@ -1,6 +1,6 @@
 "use client"
 
-import { useUser } from "@clerk/nextjs";
+import { useUser, SignOutButton } from "@clerk/nextjs";
 import {
     Settings,
     ChevronsUpDown,
@@ -122,10 +122,12 @@ export function NavUser() {
                             </DropdownMenuSub>
                         </DropdownMenuGroup>
                         <DropdownMenuSeparator />
-                        <DropdownMenuItem>
-                            <LogOut className="mr-2 h-4 w-4" />
-                            Sign out
-                        </DropdownMenuItem>
+                        <SignOutButton>
+                            <DropdownMenuItem>
+                                <LogOut className="mr-2 h-4 w-4" />
+                                Sign out
+                            </DropdownMenuItem>
+                        </SignOutButton>
                     </DropdownMenuContent>
                 </DropdownMenu>
             </SidebarMenuItem>

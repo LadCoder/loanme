@@ -1,13 +1,9 @@
-'use client';
-
 import { AgreementForm } from "~/app/_components/AgreementForm";
 import { Card, CardContent, CardHeader, CardTitle } from "~/app/_components/ui/card";
-import { createAgreement } from "./actions";
-import { useRouter } from "next/navigation";
-import { useToast } from "~/hooks/use-toast";
 import { Suspense } from "react";
 import { LoanDetails } from "./LoanDetails";
 import { Skeleton } from "~/app/_components/ui/skeleton";
+import { AgreementFormWrapper } from "./AgreementFormWrapper";
 
 function LoanDetailsSkeleton() {
     return (
@@ -29,33 +25,11 @@ function LoanDetailsSkeleton() {
 }
 
 interface PageProps {
-    params: { id: string };
+    params: Promise<{ id: string }> | { id: string };
 }
 
-export default function AgreementPage({ params }: PageProps) {
-    const router = useRouter();
-    const { toast } = useToast();
-
-    const handleSubmit = async (data: {
-        interestRate: number;
-        paymentSchedule: string;
-        terms: string;
-    }) => {
-        try {
-            await createAgreement(parseInt(params.id), data);
-            toast({
-                title: "Success",
-                description: "Agreement created successfully!",
-            });
-            router.push(`/loans/${params.id}`);
-        } catch (error) {
-            toast({
-                title: "Error",
-                description: error instanceof Error ? error.message : "Failed to create agreement",
-                variant: "destructive",
-            });
-        }
-    };
+export default async function AgreementPage({ params }: PageProps) {
+    const { id } = await params;
 
     return (
         <div className="container mx-auto py-8">
@@ -66,9 +40,9 @@ export default function AgreementPage({ params }: PageProps) {
                 <CardContent>
                     <div className="space-y-6">
                         <Suspense fallback={<LoanDetailsSkeleton />}>
-                            <LoanDetails id={params.id} />
+                            <LoanDetails id={id} />
                         </Suspense>
-                        <AgreementForm onSubmit={handleSubmit} />
+                        <AgreementFormWrapper loanId={id} />
                     </div>
                 </CardContent>
             </Card>
