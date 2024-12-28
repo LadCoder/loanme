@@ -220,7 +220,7 @@ export default async function HomePage() {
               <Link
                 key={loan.id}
                 href={`/loans/${loan.id}`}
-                className="flex items-center rounded-lg bg-background/50 p-3 transition-colors hover:bg-background/80"
+                className="flex items-center rounded-lg bg-background/50 p-3 transition-colors hover:bg-muted"
               >
                 <div className="flex items-center gap-3">
                   <div className="rounded-md bg-primary/10 p-2">
@@ -264,7 +264,7 @@ export default async function HomePage() {
               <Link
                 key={loan.id}
                 href={`/loans/${loan.id}`}
-                className="flex items-center rounded-lg bg-background/50 p-3 transition-colors hover:bg-background/80"
+                className="flex items-center rounded-lg bg-background/50 p-3 transition-colors hover:bg-muted"
               >
                 <div className="flex items-center gap-3">
                   <div className="rounded-md bg-primary/10 p-2">
