@@ -46,10 +46,10 @@ export function CurrencyDisplay({
     label,
     className,
     ...props
-}: CurrencyDisplayProps & { label: string }) {
+}: CurrencyDisplayProps & { label: React.ReactNode }) {
     return (
         <div className={cn("space-y-1", className)}>
-            <p className="text-sm text-muted-foreground">{label}</p>
+            <div className="text-sm text-muted-foreground">{label}</div>
             <Currency
                 amount={amount}
                 className="text-2xl font-semibold tracking-tight"

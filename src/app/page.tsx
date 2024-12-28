@@ -118,36 +118,94 @@ export default async function HomePage() {
       </div>
 
       <div className="grid gap-4 md:grid-cols-2">
-        <div className="rounded-xl bg-muted/50 p-6">
-          <div className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <div className="flex items-center gap-2">
-              <div className="rounded-md bg-primary/10 p-2">
-                <ArrowRight className="h-4 w-4 text-primary" />
+        <div className="rounded-xl bg-muted/50 p-6 transition-all hover:bg-muted/70">
+          <div className="flex flex-row items-center justify-between space-y-0 pb-4">
+            <div className="flex items-center gap-3">
+              <div className="rounded-xl bg-primary/10 p-3">
+                <ArrowRight className="h-5 w-5 text-primary" />
               </div>
-              <h3 className="text-sm font-medium">Money Lent</h3>
+              <div>
+                <h3 className="font-semibold">Money Lent</h3>
+                <p className="text-sm text-muted-foreground">Funds you've provided to others</p>
+              </div>
             </div>
-            <DollarSign className="h-4 w-4 text-muted-foreground" />
+            <div className="flex items-center gap-2">
+              <div className="flex -space-x-2">
+                {activeLentLoans.slice(0, 3).map((_, i) => (
+                  <div key={i} className="inline-block rounded-full border-2 border-background bg-primary/10 p-2">
+                    <User className="h-3 w-3 text-primary" />
+                  </div>
+                ))}
+              </div>
+            </div>
           </div>
-          <CurrencyDisplay
-            amount={totalLent}
-            label={`${lentLoans.length} Total • ${activeLentLoans.length} Active • ${pendingLentLoans.length} Pending`}
-          />
+          <div className="space-y-2">
+            <CurrencyDisplay
+              amount={totalLent}
+              className="text-3xl font-bold tracking-tight"
+              label={
+                <div className="flex items-center gap-4 text-sm">
+                  <div className="flex items-center gap-1.5">
+                    <BadgeCheck className="h-4 w-4 text-success" />
+                    <span>{activeLentLoans.length} Active</span>
+                  </div>
+                  <div className="flex items-center gap-1.5">
+                    <Clock className="h-4 w-4 text-warning" />
+                    <span>{pendingLentLoans.length} Pending</span>
+                  </div>
+                  <div className="flex items-center gap-1.5">
+                    <DollarSign className="h-4 w-4 text-muted-foreground" />
+                    <span>{lentLoans.length} Total</span>
+                  </div>
+                </div>
+              }
+            />
+          </div>
         </div>
 
-        <div className="rounded-xl bg-muted/50 p-6">
-          <div className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <div className="flex items-center gap-2">
-              <div className="rounded-md bg-primary/10 p-2">
-                <ArrowLeft className="h-4 w-4 text-primary" />
+        <div className="rounded-xl bg-muted/50 p-6 transition-all hover:bg-muted/70">
+          <div className="flex flex-row items-center justify-between space-y-0 pb-4">
+            <div className="flex items-center gap-3">
+              <div className="rounded-xl bg-primary/10 p-3">
+                <ArrowLeft className="h-5 w-5 text-primary" />
               </div>
-              <h3 className="text-sm font-medium">Money Borrowed</h3>
+              <div>
+                <h3 className="font-semibold">Money Borrowed</h3>
+                <p className="text-sm text-muted-foreground">Funds you've received from others</p>
+              </div>
             </div>
-            <DollarSign className="h-4 w-4 text-muted-foreground" />
+            <div className="flex items-center gap-2">
+              <div className="flex -space-x-2">
+                {activeBorrowedLoans.slice(0, 3).map((_, i) => (
+                  <div key={i} className="inline-block rounded-full border-2 border-background bg-primary/10 p-2">
+                    <User className="h-3 w-3 text-primary" />
+                  </div>
+                ))}
+              </div>
+            </div>
           </div>
-          <CurrencyDisplay
-            amount={totalBorrowed}
-            label={`${borrowedLoans.length} Total • ${activeBorrowedLoans.length} Active • ${pendingBorrowedLoans.length} Pending`}
-          />
+          <div className="space-y-2">
+            <CurrencyDisplay
+              amount={totalBorrowed}
+              className="text-3xl font-bold tracking-tight"
+              label={
+                <div className="flex items-center gap-4 text-sm">
+                  <div className="flex items-center gap-1.5">
+                    <BadgeCheck className="h-4 w-4 text-success" />
+                    <span>{activeBorrowedLoans.length} Active</span>
+                  </div>
+                  <div className="flex items-center gap-1.5">
+                    <Clock className="h-4 w-4 text-warning" />
+                    <span>{pendingBorrowedLoans.length} Pending</span>
+                  </div>
+                  <div className="flex items-center gap-1.5">
+                    <DollarSign className="h-4 w-4 text-muted-foreground" />
+                    <span>{borrowedLoans.length} Total</span>
+                  </div>
+                </div>
+              }
+            />
+          </div>
         </div>
       </div>
 
