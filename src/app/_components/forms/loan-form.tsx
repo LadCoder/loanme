@@ -5,6 +5,8 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm } from "react-hook-form";
 import { z } from "zod";
 import { useRouter } from "next/navigation";
+import { Loader2 } from "lucide-react";
+import { useState } from "react";
 
 import { Button } from "~/app/_components/ui/button";
 import {
@@ -53,6 +55,7 @@ const formSchema = z.object({
 export function LoanForm() {
     const { toast } = useToast();
     const router = useRouter();
+    const [isSubmitting, setIsSubmitting] = useState(false);
 
     const form = useForm<z.infer<typeof formSchema>>({
         resolver: zodResolver(formSchema),
@@ -71,9 +74,10 @@ export function LoanForm() {
 
     async function onSubmit(values: z.infer<typeof formSchema>) {
         try {
+            setIsSubmitting(true);
             await createLoan({
                 ...values,
-                borrowerId: values.borrowerEmail, // We'll let the server handle the email -> ID conversion
+                borrowerId: values.borrowerEmail,
             });
             toast({
                 title: "Success",
@@ -87,6 +91,7 @@ export function LoanForm() {
                 description: error instanceof Error ? error.message : "Something went wrong. Please try again.",
                 variant: "destructive",
             });
+            setIsSubmitting(false);
         }
     }
 
@@ -290,10 +295,23 @@ export function LoanForm() {
                 </Card>
 
                 <div className="flex items-center gap-4">
-                    <Button type="submit" size="lg">
-                        Create Loan
+                    <Button type="submit" size="lg" disabled={isSubmitting}>
+                        {isSubmitting ? (
+                            <>
+                                <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                                Creating Loan...
+                            </>
+                        ) : (
+                            'Create Loan'
+                        )}
                     </Button>
-                    <Button type="button" variant="outline" size="lg" onClick={() => router.back()}>
+                    <Button
+                        type="button"
+                        variant="outline"
+                        size="lg"
+                        onClick={() => router.back()}
+                        disabled={isSubmitting}
+                    >
                         Cancel
                     </Button>
                 </div>
