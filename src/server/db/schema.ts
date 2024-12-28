@@ -32,6 +32,13 @@ export const loanStatusEnum = pgEnum("loan_status", [
   "CANCELLED",
 ]);
 
+export const loanPurposeEnum = pgEnum("loan_purpose", [
+  "PERSONAL",
+  "BUSINESS",
+  "EDUCATION",
+  "OTHER",
+]);
+
 export const paymentStatusEnum = pgEnum("payment_status", [
   "PENDING",
   "PAID",
@@ -66,6 +73,10 @@ export const loans = createTable("loan", {
   amount: real("amount").notNull(),
   currency: varchar("currency", { length: 3 }).default("AUD").notNull(),
   status: loanStatusEnum("status").default("PENDING").notNull(),
+  purpose: loanPurposeEnum("purpose").notNull(),
+  description: text("description"),
+  duration: integer("duration").notNull(), // Duration in months
+  preferredSchedule: scheduleEnum("preferred_schedule").default("MONTHLY"),
   startDate: timestamp("start_date", { withTimezone: true }),
   endDate: timestamp("end_date", { withTimezone: true }),
 
@@ -82,6 +93,7 @@ export const loans = createTable("loan", {
   lenderIdx: index("lender_idx").on(table.lenderId),
   borrowerIdx: index("borrower_idx").on(table.borrowerId),
   statusIdx: index("status_idx").on(table.status),
+  purposeIdx: index("purpose_idx").on(table.purpose),
 }));
 
 export const agreements = createTable("agreement", {
