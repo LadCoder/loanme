@@ -1,11 +1,12 @@
 "use client";
 
 import { Suspense } from "react";
-import { api } from "~/utils/api";
-import { DollarSign, Clock, BadgeCheck, AlertCircle, Ban } from "lucide-react";
-import { Currency } from "~/app/_components/ui/currency";
 import Link from "next/link";
-import { OverviewSkeleton } from "~/app/_components/skeletons/OverviewSkeleton";
+import { DollarSign, Clock, BadgeCheck, AlertCircle, Ban } from "lucide-react";
+
+import { api } from "~/utils/api";
+import { Currency } from "~/app/_components/ui/currency";
+import { BorrowedLoansSkeleton } from "~/app/_components/skeletons/BorrowedLoansSkeleton";
 
 function BorrowedLoansContent() {
     const { data: borrowedLoans } = api.loan.getBorrowedLoans.useQuery(undefined, {
@@ -76,7 +77,7 @@ function BorrowedLoansContent() {
 
 export default function BorrowedLoansPage() {
     return (
-        <Suspense fallback={<OverviewSkeleton />}>
+        <Suspense fallback={<BorrowedLoansSkeleton />}>
             <BorrowedLoansContent />
         </Suspense>
     );
