@@ -7,25 +7,53 @@ import {
   BadgeCheck,
   AlertCircle,
   Ban,
+  User,
+  Calendar,
 } from "lucide-react";
 import { Button } from "~/app/_components/ui/button";
 import { Currency, CurrencyDisplay } from "~/app/_components/ui/currency";
 import Link from "next/link";
 import { db } from "~/server/db";
 import { loans } from "~/server/db/schema";
-import { eq, desc } from "drizzle-orm";
+import { eq, desc, and } from "drizzle-orm";
 import { auth } from "@clerk/nextjs/server";
+import { clerkClient } from "@clerk/nextjs/server";
+import { formatDate } from "~/utils/date";
+import { cn } from "~/lib/utils";
+
+type ClerkUser = {
+  id: string;
+  firstName?: string | null;
+  lastName?: string | null;
+  emailAddresses: { emailAddress: string }[];
+};
+
+function getStatusDisplay(status: string) {
+  const colors: Record<string, string> = {
+    ACTIVE: "text-success",
+    PENDING: "text-warning",
+    DEFAULTED: "text-destructive",
+    CANCELLED: "text-muted-foreground",
+  };
+
+  return (
+    <div className={cn("flex items-center gap-1 text-xs font-medium", colors[status.toUpperCase()])}>
+      {getStatusIcon(status)}
+      <span>{status}</span>
+    </div>
+  );
+}
 
 function getStatusIcon(status: string) {
   switch (status.toUpperCase()) {
     case 'ACTIVE':
-      return <BadgeCheck className="h-4 w-4 text-success" />;
+      return <BadgeCheck className="h-4 w-4" />;
     case 'PENDING':
-      return <Clock className="h-4 w-4 text-warning" />;
+      return <Clock className="h-4 w-4" />;
     case 'DEFAULTED':
-      return <AlertCircle className="h-4 w-4 text-destructive" />;
+      return <AlertCircle className="h-4 w-4" />;
     case 'CANCELLED':
-      return <Ban className="h-4 w-4 text-muted-foreground" />;
+      return <Ban className="h-4 w-4" />;
     default:
       return null;
   }
@@ -35,24 +63,50 @@ export default async function HomePage() {
   const session = await auth();
   if (!session?.userId) return null;
 
+  // Fetch all loans
   const [lentLoans, borrowedLoans] = await Promise.all([
     db.query.loans.findMany({
       where: eq(loans.lenderId, session.userId),
       orderBy: [desc(loans.createdAt)],
-      limit: 5,
     }),
     db.query.loans.findMany({
       where: eq(loans.borrowerId, session.userId),
       orderBy: [desc(loans.createdAt)],
-      limit: 5,
     }),
   ]);
 
+  // Calculate statistics
   const totalLent = lentLoans.reduce((acc, loan) => acc + loan.amount, 0);
   const totalBorrowed = borrowedLoans.reduce((acc, loan) => acc + loan.amount, 0);
 
+  const activeLentLoans = lentLoans.filter(loan => loan.status === "ACTIVE");
+  const activeBorrowedLoans = borrowedLoans.filter(loan => loan.status === "ACTIVE");
+  const pendingLentLoans = lentLoans.filter(loan => loan.status === "PENDING");
+  const pendingBorrowedLoans = borrowedLoans.filter(loan => loan.status === "PENDING");
+
+  // Get user information for the first 5 loans
+  const recentLentLoans = lentLoans.slice(0, 5);
+  const recentBorrowedLoans = borrowedLoans.slice(0, 5);
+
+  const userIds = new Set([
+    ...recentLentLoans.map(loan => loan.borrowerId),
+    ...recentBorrowedLoans.map(loan => loan.lenderId),
+  ]);
+
+  const clerk = await clerkClient();
+  const users = await clerk.users.getUserList({
+    userId: Array.from(userIds),
+  });
+
+  const getUserName = (userId: string) => {
+    const user = users.data.find((u: ClerkUser) => u.id === userId);
+    return user?.firstName && user?.lastName
+      ? `${user.firstName} ${user.lastName}`
+      : user?.emailAddresses[0]?.emailAddress ?? "Unknown User";
+  };
+
   return (
-    <div className="space-y-8">
+    <div className="container mx-auto space-y-6 py-6">
       <div className="flex items-center justify-between">
         <h1 className="text-3xl font-bold tracking-tight">Overview</h1>
         <Button asChild>
@@ -70,13 +124,13 @@ export default async function HomePage() {
               <div className="rounded-md bg-primary/10 p-2">
                 <ArrowRight className="h-4 w-4 text-primary" />
               </div>
-              <h3 className="text-sm font-medium">Total Money Lent</h3>
+              <h3 className="text-sm font-medium">Money Lent</h3>
             </div>
             <DollarSign className="h-4 w-4 text-muted-foreground" />
           </div>
           <CurrencyDisplay
             amount={totalLent}
-            label={`Across ${lentLoans.length} loans`}
+            label={`${lentLoans.length} Total • ${activeLentLoans.length} Active • ${pendingLentLoans.length} Pending`}
           />
         </div>
 
@@ -86,13 +140,13 @@ export default async function HomePage() {
               <div className="rounded-md bg-primary/10 p-2">
                 <ArrowLeft className="h-4 w-4 text-primary" />
               </div>
-              <h3 className="text-sm font-medium">Total Money Borrowed</h3>
+              <h3 className="text-sm font-medium">Money Borrowed</h3>
             </div>
             <DollarSign className="h-4 w-4 text-muted-foreground" />
           </div>
           <CurrencyDisplay
             amount={totalBorrowed}
-            label={`Across ${borrowedLoans.length} loans`}
+            label={`${borrowedLoans.length} Total • ${activeBorrowedLoans.length} Active • ${pendingBorrowedLoans.length} Pending`}
           />
         </div>
       </div>
@@ -103,12 +157,12 @@ export default async function HomePage() {
             <ArrowRight className="h-5 w-5" />
             Recent Loans You've Given
           </h3>
-          <div className="space-y-2">
-            {lentLoans.map((loan) => (
+          <div className="space-y-3">
+            {recentLentLoans.map((loan) => (
               <Link
                 key={loan.id}
                 href={`/loans/${loan.id}`}
-                className="flex items-center justify-between rounded-lg bg-background/50 p-3 transition-colors hover:bg-background"
+                className="flex items-center rounded-lg bg-background/50 p-3 transition-colors hover:bg-background/80"
               >
                 <div className="flex items-center gap-3">
                   <div className="rounded-md bg-primary/10 p-2">
@@ -116,15 +170,29 @@ export default async function HomePage() {
                   </div>
                   <div className="grid gap-1">
                     <Currency amount={loan.amount} className="text-sm font-medium leading-none" />
-                    <div className="flex items-center gap-1 text-sm text-muted-foreground">
-                      {getStatusIcon(loan.status)}
-                      <span>{loan.status}</span>
+                    <div className="flex items-center gap-1 text-xs text-muted-foreground">
+                      <User className="h-3 w-3" />
+                      <span>{getUserName(loan.borrowerId)}</span>
                     </div>
                   </div>
                 </div>
-                <ArrowRight className="h-4 w-4" />
+                <div className="ml-6 grid gap-1 text-right">
+                  {getStatusDisplay(loan.status)}
+                  <div className="flex items-center gap-1 text-xs text-muted-foreground">
+                    <Calendar className="h-3 w-3" />
+                    <span>{formatDate(loan.createdAt)}</span>
+                  </div>
+                </div>
+                <div className="ml-auto pl-4">
+                  <ArrowRight className="h-4 w-4" />
+                </div>
               </Link>
             ))}
+            {recentLentLoans.length === 0 && (
+              <div className="rounded-lg bg-background/50 p-3 text-center text-sm text-muted-foreground">
+                No loans yet
+              </div>
+            )}
           </div>
         </div>
 
@@ -133,12 +201,12 @@ export default async function HomePage() {
             <ArrowLeft className="h-5 w-5" />
             Recent Loans You've Received
           </h3>
-          <div className="space-y-2">
-            {borrowedLoans.map((loan) => (
+          <div className="space-y-3">
+            {recentBorrowedLoans.map((loan) => (
               <Link
                 key={loan.id}
                 href={`/loans/${loan.id}`}
-                className="flex items-center justify-between rounded-lg bg-background/50 p-3 transition-colors hover:bg-background"
+                className="flex items-center rounded-lg bg-background/50 p-3 transition-colors hover:bg-background/80"
               >
                 <div className="flex items-center gap-3">
                   <div className="rounded-md bg-primary/10 p-2">
@@ -146,15 +214,29 @@ export default async function HomePage() {
                   </div>
                   <div className="grid gap-1">
                     <Currency amount={loan.amount} className="text-sm font-medium leading-none" />
-                    <div className="flex items-center gap-1 text-sm text-muted-foreground">
-                      {getStatusIcon(loan.status)}
-                      <span>{loan.status}</span>
+                    <div className="flex items-center gap-1 text-xs text-muted-foreground">
+                      <User className="h-3 w-3" />
+                      <span>{getUserName(loan.lenderId)}</span>
                     </div>
                   </div>
                 </div>
-                <ArrowRight className="h-4 w-4" />
+                <div className="ml-6 grid gap-1 text-right">
+                  {getStatusDisplay(loan.status)}
+                  <div className="flex items-center gap-1 text-xs text-muted-foreground">
+                    <Calendar className="h-3 w-3" />
+                    <span>{formatDate(loan.createdAt)}</span>
+                  </div>
+                </div>
+                <div className="ml-auto pl-4">
+                  <ArrowRight className="h-4 w-4" />
+                </div>
               </Link>
             ))}
+            {recentBorrowedLoans.length === 0 && (
+              <div className="rounded-lg bg-background/50 p-3 text-center text-sm text-muted-foreground">
+                No loans yet
+              </div>
+            )}
           </div>
         </div>
       </div>
