@@ -1,7 +1,3 @@
-"use client";
-
-import { Suspense } from "react";
-import { api } from "~/utils/api";
 import {
   PiggyBank,
   ArrowRight,
@@ -15,34 +11,45 @@ import {
 import { Button } from "~/app/_components/ui/button";
 import { Currency, CurrencyDisplay } from "~/app/_components/ui/currency";
 import Link from "next/link";
-import { OverviewSkeleton } from "~/app/_components/skeletons/OverviewSkeleton";
+import { db } from "~/server/db";
+import { loans } from "~/server/db/schema";
+import { eq, desc } from "drizzle-orm";
+import { auth } from "@clerk/nextjs/server";
 
-function OverviewContent() {
-  const { data: lentLoans } = api.loan.getLentLoans.useQuery(undefined, {
-    suspense: true
-  });
-  const { data: borrowedLoans } = api.loan.getBorrowedLoans.useQuery(undefined, {
-    suspense: true
-  });
+function getStatusIcon(status: string) {
+  switch (status.toUpperCase()) {
+    case 'ACTIVE':
+      return <BadgeCheck className="h-4 w-4 text-success" />;
+    case 'PENDING':
+      return <Clock className="h-4 w-4 text-warning" />;
+    case 'DEFAULTED':
+      return <AlertCircle className="h-4 w-4 text-destructive" />;
+    case 'CANCELLED':
+      return <Ban className="h-4 w-4 text-muted-foreground" />;
+    default:
+      return null;
+  }
+}
 
-  const totalLent = lentLoans?.reduce((acc, loan) => acc + loan.amount, 0) ?? 0;
-  const totalBorrowed = borrowedLoans?.reduce((acc, loan) => acc + loan.amount, 0) ?? 0;
+export default async function HomePage() {
+  const session = await auth();
+  if (!session?.userId) return null;
 
-  // Helper function to get status icon
-  const getStatusIcon = (status: string) => {
-    switch (status.toUpperCase()) {
-      case 'ACTIVE':
-        return <BadgeCheck className="h-4 w-4 text-success" />;
-      case 'PENDING':
-        return <Clock className="h-4 w-4 text-warning" />;
-      case 'DEFAULTED':
-        return <AlertCircle className="h-4 w-4 text-destructive" />;
-      case 'CANCELLED':
-        return <Ban className="h-4 w-4 text-muted-foreground" />;
-      default:
-        return null;
-    }
-  };
+  const [lentLoans, borrowedLoans] = await Promise.all([
+    db.query.loans.findMany({
+      where: eq(loans.lenderId, session.userId),
+      orderBy: [desc(loans.createdAt)],
+      limit: 5,
+    }),
+    db.query.loans.findMany({
+      where: eq(loans.borrowerId, session.userId),
+      orderBy: [desc(loans.createdAt)],
+      limit: 5,
+    }),
+  ]);
+
+  const totalLent = lentLoans.reduce((acc, loan) => acc + loan.amount, 0);
+  const totalBorrowed = borrowedLoans.reduce((acc, loan) => acc + loan.amount, 0);
 
   return (
     <div className="space-y-8">
@@ -69,7 +76,7 @@ function OverviewContent() {
           </div>
           <CurrencyDisplay
             amount={totalLent}
-            label={`Across ${lentLoans?.length ?? 0} loans`}
+            label={`Across ${lentLoans.length} loans`}
           />
         </div>
 
@@ -85,7 +92,7 @@ function OverviewContent() {
           </div>
           <CurrencyDisplay
             amount={totalBorrowed}
-            label={`Across ${borrowedLoans?.length ?? 0} loans`}
+            label={`Across ${borrowedLoans.length} loans`}
           />
         </div>
       </div>
@@ -97,7 +104,7 @@ function OverviewContent() {
             Recent Loans You've Given
           </h3>
           <div className="space-y-2">
-            {lentLoans?.slice(0, 5).map((loan) => (
+            {lentLoans.map((loan) => (
               <Link
                 key={loan.id}
                 href={`/loans/${loan.id}`}
@@ -127,7 +134,7 @@ function OverviewContent() {
             Recent Loans You've Received
           </h3>
           <div className="space-y-2">
-            {borrowedLoans?.slice(0, 5).map((loan) => (
+            {borrowedLoans.map((loan) => (
               <Link
                 key={loan.id}
                 href={`/loans/${loan.id}`}
@@ -152,13 +159,5 @@ function OverviewContent() {
         </div>
       </div>
     </div>
-  );
-}
-
-export default function HomePage() {
-  return (
-    <Suspense fallback={<OverviewSkeleton />}>
-      <OverviewContent />
-    </Suspense>
   );
 }

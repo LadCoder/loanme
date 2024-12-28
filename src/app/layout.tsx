@@ -1,35 +1,24 @@
 import "~/styles/globals.css";
 
 import { GeistSans } from "geist/font/sans";
-import { type Metadata } from "next";
 import { ClerkProvider } from "@clerk/nextjs";
-import { TRPCProvider } from "./_trpc/Provider";
 import { ThemeProvider } from "~/app/_components/theme-provider";
 import { Toaster } from "~/app/_components/ui/toaster";
 import { AppSidebar } from "~/app/_components/nav/AppSidebar";
-import { Header } from "~/app/_components/nav/Header";
+import { SidebarInset, SidebarProvider } from "./_components/ui/sidebar";
+import { Header } from "./_components/nav/Header";
 
-import {
-  SidebarInset,
-  SidebarProvider,
-} from "~/app/_components/ui/sidebar"
-
-export const metadata: Metadata = {
+export const metadata = {
   title: "LoanMe",
-  description: "A simple and secure way to manage personal loans between friends and family",
-  icons: {
-    icon: [
-      {
-        url: "/favicon.svg",
-        type: "image/svg+xml",
-      },
-    ],
-  },
+  description: "Manage your loans with ease",
+  icons: [{ rel: "icon", url: "/favicon.svg" }],
 };
 
 export default function RootLayout({
   children,
-}: Readonly<{ children: React.ReactNode }>) {
+}: {
+  children: React.ReactNode;
+}) {
   return (
     <ClerkProvider>
       <html lang="en" className={GeistSans.variable} suppressHydrationWarning>
@@ -40,18 +29,16 @@ export default function RootLayout({
             enableSystem
             disableTransitionOnChange
           >
-            <TRPCProvider>
-              <SidebarProvider>
-                <AppSidebar />
-                <SidebarInset>
-                  <Header />
-                  <div className="flex flex-1 flex-col gap-4 p-4 pt-0">
-                    {children}
-                  </div>
-                </SidebarInset>
-              </SidebarProvider>
-              <Toaster />
-            </TRPCProvider>
+            <SidebarProvider>
+              <AppSidebar />
+              <SidebarInset>
+                <Header />
+                <div className="flex flex-1 flex-col gap-4 p-4 pt-0">
+                  {children}
+                </div>
+              </SidebarInset>
+            </SidebarProvider>
+            <Toaster />
           </ThemeProvider>
         </body>
       </html>
