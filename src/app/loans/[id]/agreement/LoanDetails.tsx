@@ -3,6 +3,7 @@ import { loans } from "~/server/db/schema";
 import { eq } from "drizzle-orm";
 import { Currency } from "~/app/_components/ui/currency";
 import { notFound } from "next/navigation";
+import { formatDate } from "~/utils/date";
 
 interface Props {
     id: string;
@@ -29,7 +30,7 @@ export async function LoanDetails({ id }: Props) {
             </div>
             <div>
                 <span className="font-medium">Created:</span>{" "}
-                {loan.createdAt.toLocaleDateString()}
+                {formatDate(loan.createdAt)}
             </div>
         </div>
     );
