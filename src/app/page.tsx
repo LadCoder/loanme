@@ -1,8 +1,8 @@
 "use client";
 
+import { Suspense } from "react";
 import { api } from "~/utils/api";
 import {
-  Loader2,
   PiggyBank,
   ArrowRight,
   ArrowLeft,
@@ -15,23 +15,15 @@ import {
 import { Button } from "~/app/_components/ui/button";
 import { Currency, CurrencyDisplay } from "~/app/_components/ui/currency";
 import Link from "next/link";
+import { OverviewSkeleton } from "~/app/_components/skeletons/OverviewSkeleton";
 
-export default function HomePage() {
-  const { data: lentLoans, isLoading: isLoadingLent } = api.loan.getLentLoans.useQuery();
-  const { data: borrowedLoans, isLoading: isLoadingBorrowed } = api.loan.getBorrowedLoans.useQuery();
-
-  const isLoading = isLoadingLent || isLoadingBorrowed;
-
-  if (isLoading) {
-    return (
-      <div className="flex h-[50vh] items-center justify-center">
-        <div className="text-center">
-          <Loader2 className="mx-auto h-8 w-8 animate-spin text-gray-400" />
-          <p className="mt-2 text-sm text-gray-500">Loading your loans...</p>
-        </div>
-      </div>
-    );
-  }
+function OverviewContent() {
+  const { data: lentLoans } = api.loan.getLentLoans.useQuery(undefined, {
+    suspense: true
+  });
+  const { data: borrowedLoans } = api.loan.getBorrowedLoans.useQuery(undefined, {
+    suspense: true
+  });
 
   const totalLent = lentLoans?.reduce((acc, loan) => acc + loan.amount, 0) ?? 0;
   const totalBorrowed = borrowedLoans?.reduce((acc, loan) => acc + loan.amount, 0) ?? 0;
@@ -160,5 +152,13 @@ export default function HomePage() {
         </div>
       </div>
     </div>
+  );
+}
+
+export default function HomePage() {
+  return (
+    <Suspense fallback={<OverviewSkeleton />}>
+      <OverviewContent />
+    </Suspense>
   );
 }

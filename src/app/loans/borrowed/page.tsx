@@ -2,23 +2,15 @@
 
 import * as React from "react";
 import { api } from "../../../utils/api";
-import { Loader2, ArrowRight } from "lucide-react";
+import { ArrowRight } from "lucide-react";
 import Link from "next/link";
 import { Currency } from "../../_components/ui/currency";
+import { LoanListSkeleton } from "~/app/_components/skeletons/LoanListSkeleton";
 
-export default function BorrowedLoansPage() {
-    const { data: loans, isLoading } = api.loan.getBorrowedLoans.useQuery();
-
-    if (isLoading) {
-        return (
-            <div className="flex h-[50vh] items-center justify-center">
-                <div className="text-center">
-                    <Loader2 className="mx-auto h-8 w-8 animate-spin text-gray-400" />
-                    <p className="mt-2 text-sm text-gray-500">Loading your borrowed loans...</p>
-                </div>
-            </div>
-        );
-    }
+function BorrowedLoansContent() {
+    const { data: loans } = api.loan.getBorrowedLoans.useQuery(undefined, {
+        suspense: true
+    });
 
     return (
         <div className="space-y-8">
@@ -87,5 +79,13 @@ export default function BorrowedLoansPage() {
                 )}
             </div>
         </div>
+    );
+}
+
+export default function BorrowedLoansPage() {
+    return (
+        <React.Suspense fallback={<LoanListSkeleton />}>
+            <BorrowedLoansContent />
+        </React.Suspense>
     );
 } 

@@ -2,21 +2,27 @@
 
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { httpBatchLink } from '@trpc/client';
-import { useState } from 'react';
+import React, { useState } from 'react';
 import { api } from '~/utils/api';
 
-export function TRPCProvider({ children }: { children: React.ReactNode }) {
-    const [queryClient] = useState(() => new QueryClient());
+export function TRPCProvider(props: { children: React.ReactNode }) {
+    const [queryClient] = useState(
+        () =>
+            new QueryClient({
+                defaultOptions: {
+                    queries: {
+                        suspense: true,
+                        refetchOnWindowFocus: false,
+                    },
+                },
+            })
+    );
+
     const [trpcClient] = useState(() =>
         api.createClient({
             links: [
                 httpBatchLink({
                     url: '/api/trpc',
-                    headers() {
-                        return {
-                            'Authorization': `${window?.localStorage?.getItem('clerk-db-jwt') ?? ''}`,
-                        };
-                    },
                 }),
             ],
         })
@@ -24,7 +30,9 @@ export function TRPCProvider({ children }: { children: React.ReactNode }) {
 
     return (
         <api.Provider client={trpcClient} queryClient={queryClient}>
-            <QueryClientProvider client={queryClient}>{children}</QueryClientProvider>
+            <QueryClientProvider client={queryClient}>
+                {props.children}
+            </QueryClientProvider>
         </api.Provider>
     );
 } 
