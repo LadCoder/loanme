@@ -7,6 +7,26 @@ import { useRouter } from "next/navigation";
 import { useToast } from "~/hooks/use-toast";
 import { Suspense } from "react";
 import { LoanDetails } from "./LoanDetails";
+import { Skeleton } from "~/app/_components/ui/skeleton";
+
+function LoanDetailsSkeleton() {
+    return (
+        <div className="space-y-2">
+            <div>
+                <span className="font-medium">Loan Amount:</span>{" "}
+                <Skeleton className="inline-block h-6 w-24" />
+            </div>
+            <div>
+                <span className="font-medium">Status:</span>{" "}
+                <Skeleton className="inline-block h-6 w-20" />
+            </div>
+            <div>
+                <span className="font-medium">Created:</span>{" "}
+                <Skeleton className="inline-block h-6 w-32" />
+            </div>
+        </div>
+    );
+}
 
 interface PageProps {
     params: { id: string };
@@ -45,7 +65,7 @@ export default function AgreementPage({ params }: PageProps) {
                 </CardHeader>
                 <CardContent>
                     <div className="space-y-6">
-                        <Suspense fallback={<div>Loading loan details...</div>}>
+                        <Suspense fallback={<LoanDetailsSkeleton />}>
                             <LoanDetails id={params.id} />
                         </Suspense>
                         <AgreementForm onSubmit={handleSubmit} />

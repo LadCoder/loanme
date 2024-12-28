@@ -12,7 +12,7 @@ export default function NewLoanPage() {
     const router = useRouter();
     const { toast } = useToast();
     const [amount, setAmount] = useState("");
-    const [borrowerId, setBorrowerId] = useState("");
+    const [borrowerEmail, setBorrowerEmail] = useState("");
 
     const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
         e.preventDefault();
@@ -23,11 +23,11 @@ export default function NewLoanPage() {
                 throw new Error("Please enter a valid amount");
             }
 
-            if (!borrowerId) {
-                throw new Error("Please enter a borrower ID");
+            if (!borrowerEmail) {
+                throw new Error("Please enter the borrower's email address");
             }
 
-            await createLoan(parsedAmount, borrowerId);
+            await createLoan(parsedAmount, borrowerEmail);
             toast({
                 title: "Success",
                 description: "Loan created successfully!",
@@ -62,17 +62,20 @@ export default function NewLoanPage() {
                         />
                     </div>
                     <div>
-                        <Label htmlFor="borrowerId" className="block text-sm font-medium text-gray-700">
-                            Borrower ID
+                        <Label htmlFor="borrowerEmail" className="block text-sm font-medium text-gray-700">
+                            Borrower's Email
                         </Label>
                         <Input
-                            id="borrowerId"
-                            type="text"
-                            value={borrowerId}
-                            onChange={(e) => setBorrowerId(e.target.value)}
-                            placeholder="Enter borrower's ID"
+                            id="borrowerEmail"
+                            type="email"
+                            value={borrowerEmail}
+                            onChange={(e) => setBorrowerEmail(e.target.value)}
+                            placeholder="Enter borrower's email address"
                             required
                         />
+                        <p className="mt-1 text-sm text-muted-foreground">
+                            Enter the email address of the person who will be borrowing the money. They must have an account on the platform.
+                        </p>
                     </div>
                     <Button type="submit" className="w-full">
                         Create Loan

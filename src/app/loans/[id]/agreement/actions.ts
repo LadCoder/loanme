@@ -44,7 +44,7 @@ export async function createAgreement(
 
     // Update the loan status
     await db.update(loans)
-        .set({ status: "PENDING", updatedAt: new Date() })
+        .set({ status: "ACTIVE", updatedAt: new Date() })
         .where(eq(loans.id, loanId));
 
     revalidatePath(`/loans/${loanId}`);
