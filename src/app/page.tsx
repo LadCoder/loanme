@@ -15,7 +15,7 @@ import { Currency, CurrencyDisplay } from "~/app/_components/ui/currency";
 import Link from "next/link";
 import { db } from "~/server/db";
 import { loans } from "~/server/db/schema";
-import { eq, desc, and } from "drizzle-orm";
+import { eq, desc } from "drizzle-orm";
 import { auth } from "@clerk/nextjs/server";
 import { clerkClient } from "@clerk/nextjs/server";
 import { formatDate } from "~/utils/date";
@@ -67,11 +67,11 @@ export default async function HomePage() {
   const [lentLoans, borrowedLoans] = await Promise.all([
     db.query.loans.findMany({
       where: eq(loans.lenderId, session.userId),
-      orderBy: [desc(loans.createdAt)],
+      orderBy: [desc(loans.startDate)],
     }),
     db.query.loans.findMany({
       where: eq(loans.borrowerId, session.userId),
-      orderBy: [desc(loans.createdAt)],
+      orderBy: [desc(loans.startDate)],
     }),
   ]);
 
@@ -106,7 +106,7 @@ export default async function HomePage() {
   };
 
   return (
-    <div className="container mx-auto space-y-6 px-3 py-6 sm:px-6">
+    <div className="container mx-auto space-y-6 px-1 py-6">
       <div className="flex items-center justify-between">
         <h1 className="text-3xl font-bold tracking-tight">Overview</h1>
         <Button asChild>
@@ -239,7 +239,7 @@ export default async function HomePage() {
                     {getStatusDisplay(loan.status)}
                     <div className="flex items-center gap-1 text-xs text-muted-foreground">
                       <Calendar className="h-3 w-3" />
-                      <span>{formatDate(loan.createdAt)}</span>
+                      <span>{loan.startDate ? formatDate(loan.startDate) : 'No start date'}</span>
                     </div>
                   </div>
                   <ArrowRight className="ml-2 h-4 w-4" />
@@ -283,7 +283,7 @@ export default async function HomePage() {
                     {getStatusDisplay(loan.status)}
                     <div className="flex items-center gap-1 text-xs text-muted-foreground">
                       <Calendar className="h-3 w-3" />
-                      <span>{formatDate(loan.createdAt)}</span>
+                      <span>{loan.startDate ? formatDate(loan.startDate) : 'No start date'}</span>
                     </div>
                   </div>
                   <ArrowRight className="ml-2 h-4 w-4" />

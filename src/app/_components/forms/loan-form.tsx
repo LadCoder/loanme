@@ -98,8 +98,8 @@ export function LoanForm() {
     return (
         <Form {...form}>
             <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
-                <Card className="p-6">
-                    <div className="space-y-4">
+                <Card className="rounded-xl bg-muted/50">
+                    <div className="space-y-4 p-6">
                         <div className="flex items-center gap-2 text-lg font-semibold">
                             <DollarSign className="h-5 w-5" />
                             Loan Details
@@ -172,8 +172,8 @@ export function LoanForm() {
                     </div>
                 </Card>
 
-                <Card className="p-6">
-                    <div className="space-y-4">
+                <Card className="rounded-xl bg-muted/50">
+                    <div className="space-y-4 p-6">
                         <div className="flex items-center gap-2 text-lg font-semibold">
                             <Calendar className="h-5 w-5" />
                             Loan Schedule
@@ -269,8 +269,8 @@ export function LoanForm() {
                     </div>
                 </Card>
 
-                <Card className="p-6">
-                    <div className="space-y-4">
+                <Card className="rounded-xl bg-muted/50">
+                    <div className="space-y-4 p-6">
                         <div className="flex items-center gap-2 text-lg font-semibold">
                             <UserIcon className="h-5 w-5" />
                             Borrower Information
