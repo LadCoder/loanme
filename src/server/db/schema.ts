@@ -12,6 +12,7 @@ import {
   boolean,
   real,
   pgEnum,
+  type PgTable,
 } from "drizzle-orm/pg-core";
 import { relations } from "drizzle-orm";
 
@@ -55,6 +56,13 @@ export const scheduleEnum = pgEnum("schedule", [
 ]);
 
 export const moodEnum = pgEnum("mood", ["HAPPY", "NEUTRAL", "SAD", "ANGRY"]);
+
+export const agreementStatusEnum = pgEnum("agreement_status", [
+  "DRAFT",
+  "PENDING",
+  "ACCEPTED",
+  "REJECTED",
+]);
 
 // Tables
 export const users = createTable("user", {
@@ -102,9 +110,29 @@ export const agreements = createTable("agreement", {
   interestRate: real("interest_rate").default(0).notNull(),
   paymentSchedule: scheduleEnum("payment_schedule").default("MONTHLY").notNull(),
   terms: text("terms").notNull(),
+  status: agreementStatusEnum("status").default("DRAFT").notNull(),
+  version: integer("version").default(1).notNull(),
+  previousVersionId: integer("previous_version_id"),
   signedByLender: boolean("signed_by_lender").default(false).notNull(),
   signedByBorrower: boolean("signed_by_borrower").default(false).notNull(),
   signedAt: timestamp("signed_at", { withTimezone: true }),
+
+  // Late Payment Terms
+  latePaymentFee: real("late_payment_fee").default(0).notNull(),
+  gracePeriod: integer("grace_period").default(3).notNull(),
+
+  // Early Repayment Terms
+  allowEarlyRepayment: boolean("allow_early_repayment").default(true).notNull(),
+  earlyRepaymentFee: real("early_repayment_fee").default(0).notNull(),
+
+  // Default Terms
+  defaultInterestRate: real("default_interest_rate").default(0).notNull(),
+  defaultNoticePeriod: integer("default_notice_period").default(14).notNull(),
+
+  // Collateral Information
+  hasCollateral: boolean("has_collateral").default(false).notNull(),
+  collateralDescription: text("collateral_description"),
+  collateralValue: real("collateral_value"),
 
   createdAt: timestamp("created_at", { withTimezone: true })
     .default(sql`CURRENT_TIMESTAMP`)
@@ -115,6 +143,8 @@ export const agreements = createTable("agreement", {
 }, (table) => ({
   loanIdx: index("agreement_loan_idx").on(table.loanId),
   signedIdx: index("agreement_signed_idx").on(table.signedByLender, table.signedByBorrower),
+  statusIdx: index("agreement_status_idx").on(table.status),
+  versionIdx: index("agreement_version_idx").on(table.version),
 }));
 
 export const repayments = createTable("repayment", {
@@ -152,6 +182,10 @@ export const agreementsRelations = relations(agreements, ({ one }) => ({
   loan: one(loans, {
     fields: [agreements.loanId],
     references: [loans.id],
+  }),
+  previousVersion: one(agreements, {
+    fields: [agreements.previousVersionId],
+    references: [agreements.id],
   }),
 }));
 
