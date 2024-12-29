@@ -7,6 +7,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "~/app/_components/ui/c
 import { Currency } from "~/app/_components/ui/currency";
 import { getStatusDisplay } from "~/utils/loan";
 import { formatDate } from "~/utils/date";
+import { LoanActions } from "~/app/_components/loans/loan-actions";
 
 interface PageProps {
     params: Promise<{
@@ -37,10 +38,18 @@ export default async function LoanPage({ params }: PageProps) {
         <div className="space-y-6 p-6">
             <div className="flex items-center justify-between">
                 <h1 className="text-3xl font-bold">Loan Details</h1>
-                <div className="flex items-center gap-2">
-                    <Currency amount={loan.amount} currency={loan.currency} />
-                    <span className="text-muted-foreground">•</span>
-                    {getStatusDisplay(loan.status)}
+                <div className="flex items-center gap-4">
+                    <div className="flex items-center gap-2">
+                        <Currency amount={loan.amount} currency={loan.currency} />
+                        <span className="text-muted-foreground">•</span>
+                        {getStatusDisplay(loan.status)}
+                    </div>
+                    <LoanActions
+                        loanId={loan.id}
+                        status={loan.status}
+                        isLender={userId === loan.lenderId}
+                        isBorrower={userId === loan.borrowerId}
+                    />
                 </div>
             </div>
 
@@ -68,7 +77,7 @@ export default async function LoanPage({ params }: PageProps) {
                         </div>
                         <div className="flex justify-between">
                             <span className="text-muted-foreground">Schedule</span>
-                            <span className="capitalize">{loan.preferredSchedule.toLowerCase()}</span>
+                            <span className="capitalize">{loan.preferredSchedule?.toLowerCase()}</span>
                         </div>
                     </CardContent>
                 </Card>

@@ -1,50 +1,57 @@
 import React from "react";
-import { BadgeCheck, Clock, AlertCircle, Ban } from "lucide-react";
+import { CheckCircle2, Clock, Ban, AlertCircle, CircleDollarSign } from "lucide-react";
 import { cn } from "~/lib/utils";
 
-/**
- * Returns the appropriate icon component for a loan status
- */
-export function getStatusIcon(status: string) {
-    switch (status.toUpperCase()) {
-        case "ACTIVE":
-            return <BadgeCheck className="h-4 w-4 text-success" />;
-        case "PENDING":
-            return <Clock className="h-4 w-4 text-warning" />;
-        case "DEFAULTED":
-            return <AlertCircle className="h-4 w-4 text-destructive" />;
-        case "CANCELLED":
-            return <Ban className="h-4 w-4 text-muted-foreground" />;
-        default:
-            return null;
-    }
+export type LoanStatus = "PENDING" | "ACTIVE" | "COMPLETED" | "DEFAULTED" | "CANCELLED";
+
+interface StatusConfig {
+    label: string;
+    color: string;
+    icon: React.ComponentType<{ className?: string }>;
 }
 
-/**
- * Returns a styled component displaying the loan status with an icon
- */
-export function getStatusDisplay(status: string) {
-    const colors: Record<string, string> = {
-        ACTIVE: "text-success",
-        PENDING: "text-warning",
-        DEFAULTED: "text-destructive",
-        CANCELLED: "text-muted-foreground",
-    };
+const statusConfig: Record<LoanStatus, StatusConfig> = {
+    PENDING: {
+        label: "Pending",
+        color: "text-yellow-500",
+        icon: Clock,
+    },
+    ACTIVE: {
+        label: "Active",
+        color: "text-emerald-500",
+        icon: CircleDollarSign,
+    },
+    COMPLETED: {
+        label: "Completed",
+        color: "text-sky-500",
+        icon: CheckCircle2,
+    },
+    DEFAULTED: {
+        label: "Defaulted",
+        color: "text-red-500",
+        icon: AlertCircle,
+    },
+    CANCELLED: {
+        label: "Cancelled",
+        color: "text-gray-500",
+        icon: Ban,
+    },
+};
+
+export function getStatusDisplay(status: LoanStatus) {
+    const config = statusConfig[status];
+    if (!config) return null;
+
+    const Icon = config.icon;
 
     return (
-        <div className={cn("flex items-center gap-1 text-xs font-medium", colors[status.toUpperCase()])}>
-            {getStatusIcon(status)}
-            <span>{status}</span>
+        <div className={cn("flex items-center gap-1.5", config.color)}>
+            <Icon className="h-4 w-4" />
+            <span>{config.label}</span>
         </div>
     );
 }
 
-/**
- * Type for valid loan statuses
- */
-export type LoanStatus = "ACTIVE" | "PENDING" | "DEFAULTED" | "CANCELLED";
-
-/**
- * Type for loan repayment schedules
- */
-export type RepaymentSchedule = "WEEKLY" | "FORTNIGHTLY" | "MONTHLY"; 
+export function getStatusColor(status: LoanStatus) {
+    return statusConfig[status]?.color;
+} 

@@ -9,6 +9,7 @@ import {
   Ban,
   User,
   Calendar,
+  CircleDollarSign,
 } from "lucide-react";
 import { Button } from "~/app/_components/ui/button";
 import { Currency, CurrencyDisplay } from "~/app/_components/ui/currency";
@@ -20,6 +21,7 @@ import { auth } from "@clerk/nextjs/server";
 import { clerkClient } from "@clerk/nextjs/server";
 import { formatDate } from "~/utils/date";
 import { cn } from "~/lib/utils";
+import { getStatusDisplay } from "~/utils/loan";
 
 type ClerkUser = {
   id: string;
@@ -27,37 +29,6 @@ type ClerkUser = {
   lastName?: string | null;
   emailAddresses: { emailAddress: string }[];
 };
-
-function getStatusDisplay(status: string) {
-  const colors: Record<string, string> = {
-    ACTIVE: "text-success",
-    PENDING: "text-warning",
-    DEFAULTED: "text-destructive",
-    CANCELLED: "text-muted-foreground",
-  };
-
-  return (
-    <div className={cn("flex items-center gap-1 text-xs font-medium", colors[status.toUpperCase()])}>
-      {getStatusIcon(status)}
-      <span>{status}</span>
-    </div>
-  );
-}
-
-function getStatusIcon(status: string) {
-  switch (status.toUpperCase()) {
-    case 'ACTIVE':
-      return <BadgeCheck className="h-4 w-4" />;
-    case 'PENDING':
-      return <Clock className="h-4 w-4" />;
-    case 'DEFAULTED':
-      return <AlertCircle className="h-4 w-4" />;
-    case 'CANCELLED':
-      return <Ban className="h-4 w-4" />;
-    default:
-      return null;
-  }
-}
 
 export default async function HomePage() {
   const session = await auth();
@@ -118,95 +89,81 @@ export default async function HomePage() {
       </div>
 
       <div className="grid gap-4 md:grid-cols-2">
-        <div className="rounded-xl bg-muted/50 p-6 transition-all hover:bg-muted/70">
-          <div className="flex flex-row items-center justify-between space-y-0 pb-4">
-            <div className="flex items-center gap-3">
-              <div className="rounded-xl bg-primary/10 p-3">
-                <ArrowRight className="h-5 w-5 text-primary" />
-              </div>
-              <div>
-                <h3 className="font-semibold">Money Lent</h3>
-                <p className="text-sm text-muted-foreground">Funds you've provided to others</p>
-              </div>
-            </div>
-            <div className="flex items-center gap-2">
-              <div className="flex -space-x-2">
-                {activeLentLoans.slice(0, 3).map((_, i) => (
-                  <div key={i} className="inline-block rounded-full border-2 border-background bg-primary/10 p-2">
-                    <User className="h-3 w-3 text-primary" />
-                  </div>
-                ))}
-              </div>
-            </div>
-          </div>
-          <div className="space-y-2">
-            <CurrencyDisplay
-              amount={totalLent}
-              className="text-3xl font-bold tracking-tight"
-              label={
-                <div className="flex flex-wrap items-center gap-x-4 gap-y-2 text-sm">
-                  <div className="flex items-center gap-1.5">
-                    <BadgeCheck className="h-4 w-4 text-success" />
-                    <span>{activeLentLoans.length} Active</span>
-                  </div>
-                  <div className="flex items-center gap-1.5">
-                    <Clock className="h-4 w-4 text-warning" />
-                    <span>{pendingLentLoans.length} Pending</span>
-                  </div>
-                  <div className="flex items-center gap-1.5">
-                    <DollarSign className="h-4 w-4 text-muted-foreground" />
-                    <span>{lentLoans.length} Total</span>
-                  </div>
+        <Link href="/loans/lent" className="block">
+          <div className="rounded-xl bg-muted/50 p-6 transition-all hover:bg-muted/70">
+            <div className="flex flex-row items-center justify-between space-y-0 pb-4">
+              <div className="flex items-center gap-3">
+                <div className="rounded-xl bg-primary/10 p-3">
+                  <ArrowRight className="h-5 w-5 text-primary" />
                 </div>
-              }
-            />
+                <div>
+                  <h3 className="font-semibold">Money Lent</h3>
+                  <p className="text-sm text-muted-foreground">View loans you've given to others</p>
+                </div>
+              </div>
+            </div>
+            <div className="space-y-2">
+              <CurrencyDisplay
+                amount={totalLent}
+                className="text-3xl font-bold tracking-tight"
+                label={
+                  <div className="flex flex-wrap items-center gap-x-4 gap-y-2 text-sm">
+                    <div className="flex items-center gap-1.5">
+                      <CircleDollarSign className="h-4 w-4 text-emerald-500" />
+                      <span>{activeLentLoans.length} Active</span>
+                    </div>
+                    <div className="flex items-center gap-1.5">
+                      <Clock className="h-4 w-4 text-yellow-500" />
+                      <span>{pendingLentLoans.length} Pending</span>
+                    </div>
+                    <div className="flex items-center gap-1.5">
+                      <AlertCircle className="h-4 w-4 text-muted-foreground" />
+                      <span>{lentLoans.length} Total</span>
+                    </div>
+                  </div>
+                }
+              />
+            </div>
           </div>
-        </div>
+        </Link>
 
-        <div className="rounded-xl bg-muted/50 p-6 transition-all hover:bg-muted/70">
-          <div className="flex flex-row items-center justify-between space-y-0 pb-4">
-            <div className="flex items-center gap-3">
-              <div className="rounded-xl bg-primary/10 p-3">
-                <ArrowLeft className="h-5 w-5 text-primary" />
-              </div>
-              <div>
-                <h3 className="font-semibold">Money Borrowed</h3>
-                <p className="text-sm text-muted-foreground">Funds you've received from others</p>
-              </div>
-            </div>
-            <div className="flex items-center gap-2">
-              <div className="flex -space-x-2">
-                {activeBorrowedLoans.slice(0, 3).map((_, i) => (
-                  <div key={i} className="inline-block rounded-full border-2 border-background bg-primary/10 p-2">
-                    <User className="h-3 w-3 text-primary" />
-                  </div>
-                ))}
-              </div>
-            </div>
-          </div>
-          <div className="space-y-2">
-            <CurrencyDisplay
-              amount={totalBorrowed}
-              className="text-3xl font-bold tracking-tight"
-              label={
-                <div className="flex flex-wrap items-center gap-x-4 gap-y-2 text-sm">
-                  <div className="flex items-center gap-1.5">
-                    <BadgeCheck className="h-4 w-4 text-success" />
-                    <span>{activeBorrowedLoans.length} Active</span>
-                  </div>
-                  <div className="flex items-center gap-1.5">
-                    <Clock className="h-4 w-4 text-warning" />
-                    <span>{pendingBorrowedLoans.length} Pending</span>
-                  </div>
-                  <div className="flex items-center gap-1.5">
-                    <DollarSign className="h-4 w-4 text-muted-foreground" />
-                    <span>{borrowedLoans.length} Total</span>
-                  </div>
+        <Link href="/loans/borrowed" className="block">
+          <div className="rounded-xl bg-muted/50 p-6 transition-all hover:bg-muted/70">
+            <div className="flex flex-row items-center justify-between space-y-0 pb-4">
+              <div className="flex items-center gap-3">
+                <div className="rounded-xl bg-primary/10 p-3">
+                  <ArrowLeft className="h-5 w-5 text-primary" />
                 </div>
-              }
-            />
+                <div>
+                  <h3 className="font-semibold">Money Borrowed</h3>
+                  <p className="text-sm text-muted-foreground">View loans you've received from others</p>
+                </div>
+              </div>
+            </div>
+            <div className="space-y-2">
+              <CurrencyDisplay
+                amount={totalBorrowed}
+                className="text-3xl font-bold tracking-tight"
+                label={
+                  <div className="flex flex-wrap items-center gap-x-4 gap-y-2 text-sm">
+                    <div className="flex items-center gap-1.5">
+                      <CircleDollarSign className="h-4 w-4 text-emerald-500" />
+                      <span>{activeBorrowedLoans.length} Active</span>
+                    </div>
+                    <div className="flex items-center gap-1.5">
+                      <Clock className="h-4 w-4 text-yellow-500" />
+                      <span>{pendingBorrowedLoans.length} Pending</span>
+                    </div>
+                    <div className="flex items-center gap-1.5">
+                      <AlertCircle className="h-4 w-4 text-muted-foreground" />
+                      <span>{borrowedLoans.length} Total</span>
+                    </div>
+                  </div>
+                }
+              />
+            </div>
           </div>
-        </div>
+        </Link>
       </div>
 
       <div className="grid gap-4 md:grid-cols-2">
@@ -235,9 +192,11 @@ export default async function HomePage() {
                   </div>
                 </div>
                 <div className="ml-6 flex items-center gap-4">
-                  <div className="grid gap-1 text-right">
-                    {getStatusDisplay(loan.status)}
-                    <div className="flex items-center gap-1 text-xs text-muted-foreground">
+                  <div className="text-right">
+                    <div className="flex justify-end">
+                      {getStatusDisplay(loan.status)}
+                    </div>
+                    <div className="mt-1 flex items-center justify-end gap-1 text-xs text-muted-foreground">
                       <Calendar className="h-3 w-3" />
                       <span>{loan.startDate ? formatDate(loan.startDate) : 'No start date'}</span>
                     </div>
@@ -279,9 +238,11 @@ export default async function HomePage() {
                   </div>
                 </div>
                 <div className="ml-6 flex items-center gap-4">
-                  <div className="grid gap-1 text-right">
-                    {getStatusDisplay(loan.status)}
-                    <div className="flex items-center gap-1 text-xs text-muted-foreground">
+                  <div className="text-right">
+                    <div className="flex justify-end">
+                      {getStatusDisplay(loan.status)}
+                    </div>
+                    <div className="mt-1 flex items-center justify-end gap-1 text-xs text-muted-foreground">
                       <Calendar className="h-3 w-3" />
                       <span>{loan.startDate ? formatDate(loan.startDate) : 'No start date'}</span>
                     </div>
