@@ -1,4 +1,3 @@
-import React from "react";
 import { auth, clerkClient } from "@clerk/nextjs/server";
 import { db } from "~/server/db";
 import { loans } from "~/server/db/schema";
@@ -23,7 +22,7 @@ export const dynamic = 'force-dynamic';
 // Number of items per page
 const ITEMS_PER_PAGE = 10;
 
-export default async function BorrowedLoansPage({
+export default async function LentLoansPage({
     searchParams,
 }: {
     searchParams: { page?: string };
@@ -37,22 +36,22 @@ export default async function BorrowedLoansPage({
     const offset = (currentPage - 1) * ITEMS_PER_PAGE;
 
     // Fetch total count for pagination
-    const [countResult] = await db.select({ value: count() }).from(loans).where(eq(loans.borrowerId, userId));
+    const [countResult] = await db.select({ value: count() }).from(loans).where(eq(loans.lenderId, userId));
     const totalLoans = countResult.value;
 
     // Fetch paginated loans
-    const borrowedLoans = await db.query.loans.findMany({
-        where: eq(loans.borrowerId, userId),
+    const lentLoans = await db.query.loans.findMany({
+        where: eq(loans.lenderId, userId),
         orderBy: [desc(loans.startDate)],
         offset: offset,
         limit: ITEMS_PER_PAGE,
     });
 
-    // Get lender information
-    const lenderIds = borrowedLoans.map(loan => loan.lenderId);
+    // Get borrower information
+    const borrowerIds = lentLoans.map(loan => loan.borrowerId);
     const clerk = await clerkClient();
     const users = await clerk.users.getUserList({
-        userId: lenderIds,
+        userId: borrowerIds,
     });
 
     const getUserName = (userId: string) => {
@@ -67,7 +66,7 @@ export default async function BorrowedLoansPage({
     return (
         <div className="container mx-auto space-y-6 px-1 py-6">
             <div className="flex items-center justify-between">
-                <h1 className="text-3xl font-bold tracking-tight">Borrowed Loans</h1>
+                <h1 className="text-3xl font-bold tracking-tight">Lent Loans</h1>
             </div>
 
             <div className="overflow-hidden rounded-xl bg-muted/50">
@@ -75,7 +74,7 @@ export default async function BorrowedLoansPage({
                     <TableHeader>
                         <TableRow className="hover:bg-transparent">
                             <TableHead>Amount</TableHead>
-                            <TableHead>Lender</TableHead>
+                            <TableHead>Borrower</TableHead>
                             <TableHead>Status</TableHead>
                             <TableHead>Start Date</TableHead>
                             <TableHead>Duration</TableHead>
@@ -83,7 +82,7 @@ export default async function BorrowedLoansPage({
                         </TableRow>
                     </TableHeader>
                     <TableBody>
-                        {borrowedLoans.map((loan) => (
+                        {lentLoans.map((loan) => (
                             <TableRow key={loan.id} className="hover:bg-muted/50">
                                 <TableCell>
                                     <Link
@@ -101,7 +100,7 @@ export default async function BorrowedLoansPage({
                                         <div className="rounded-full bg-primary/10 p-1">
                                             <User className="h-3 w-3 text-primary" />
                                         </div>
-                                        <span>{getUserName(loan.lenderId)}</span>
+                                        <span>{getUserName(loan.borrowerId)}</span>
                                     </div>
                                 </TableCell>
                                 <TableCell>{getStatusDisplay(loan.status)}</TableCell>
@@ -114,7 +113,7 @@ export default async function BorrowedLoansPage({
                                 </TableCell>
                             </TableRow>
                         ))}
-                        {borrowedLoans.length === 0 && (
+                        {lentLoans.length === 0 && (
                             <TableRow className="hover:bg-transparent">
                                 <TableCell colSpan={6} className="text-center">
                                     No loans found
@@ -130,7 +129,7 @@ export default async function BorrowedLoansPage({
                     {Array.from({ length: totalPages }, (_, i) => i + 1).map((page) => (
                         <Link
                             key={page}
-                            href={`/loans/borrowed?page=${page}`}
+                            href={`/loans/lent?page=${page}`}
                             className={`inline-flex h-8 min-w-[32px] items-center justify-center rounded-md px-3 text-sm font-medium ${currentPage === page
                                 ? "bg-primary text-primary-foreground"
                                 : "bg-muted/50 hover:bg-muted"
