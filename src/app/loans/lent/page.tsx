@@ -1,7 +1,8 @@
+import React from "react";
 import { auth, clerkClient } from "@clerk/nextjs/server";
 import { db } from "~/server/db";
 import { loans } from "~/server/db/schema";
-import { eq, desc, count } from "drizzle-orm";
+import { eq, desc, asc, count } from "drizzle-orm";
 import { CurrencyDisplay } from "~/app/_components/ui/currency";
 import {
     Table,
@@ -15,6 +16,7 @@ import { getStatusDisplay } from "~/utils/loan";
 import { formatDate } from "~/utils/date";
 import { User } from "lucide-react";
 import Link from "next/link";
+import { LoanTableHeader } from "~/app/_components/loans/loan-table-header";
 
 // Mark page as dynamic to handle searchParams
 export const dynamic = 'force-dynamic';
@@ -22,27 +24,33 @@ export const dynamic = 'force-dynamic';
 // Number of items per page
 const ITEMS_PER_PAGE = 10;
 
+// Valid sort fields
+const SORT_FIELDS = ["amount", "status", "startDate", "duration", "preferredSchedule"] as const;
+type SortField = typeof SORT_FIELDS[number];
+
 export default async function LentLoansPage({
     searchParams,
 }: {
-    searchParams: { page?: string };
+    searchParams: { page?: string; sort?: string; order?: "asc" | "desc" };
 }) {
     const { userId } = await auth();
     if (!userId) return null;
 
-    // Get current page from query params
+    // Get current page and sort params
     searchParams = await searchParams;
     const currentPage = Number(searchParams.page) || 1;
     const offset = (currentPage - 1) * ITEMS_PER_PAGE;
+    const sortField = (searchParams.sort || "startDate") as SortField;
+    const sortOrder = searchParams.order || "desc";
 
     // Fetch total count for pagination
     const [countResult] = await db.select({ value: count() }).from(loans).where(eq(loans.lenderId, userId));
-    const totalLoans = countResult.value;
+    const totalLoans = countResult?.value || 0;
 
-    // Fetch paginated loans
+    // Fetch paginated loans with sorting
     const lentLoans = await db.query.loans.findMany({
         where: eq(loans.lenderId, userId),
-        orderBy: [desc(loans.startDate)],
+        orderBy: [sortOrder === "desc" ? desc(loans[sortField]) : asc(loans[sortField])],
         offset: offset,
         limit: ITEMS_PER_PAGE,
     });
@@ -71,16 +79,7 @@ export default async function LentLoansPage({
 
             <div className="overflow-hidden rounded-xl bg-muted/50">
                 <Table>
-                    <TableHeader>
-                        <TableRow className="hover:bg-transparent">
-                            <TableHead>Amount</TableHead>
-                            <TableHead>Borrower</TableHead>
-                            <TableHead>Status</TableHead>
-                            <TableHead>Start Date</TableHead>
-                            <TableHead>Duration</TableHead>
-                            <TableHead>Schedule</TableHead>
-                        </TableRow>
-                    </TableHeader>
+                    <LoanTableHeader userType="lender" />
                     <TableBody>
                         {lentLoans.map((loan) => (
                             <TableRow key={loan.id} className="hover:bg-muted/50">

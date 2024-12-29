@@ -1,12 +1,39 @@
 import * as React from "react";
-import { cn } from "../../../lib/utils";
-import {
-    type CurrencyDisplayProps,
-    formatCurrency,
-    formatCompactCurrency,
-    formatCurrencyDifference,
-    getCurrencyColorClass,
-} from "../../../utils/currency";
+import { cn } from "~/lib/utils";
+
+export interface CurrencyDisplayProps {
+    amount: number;
+    compact?: boolean;
+    showDifference?: boolean;
+    className?: string;
+    currency?: string;
+}
+
+export function formatCurrency(amount: number, options: { currency?: string } = {}) {
+    return new Intl.NumberFormat("en-US", {
+        style: "currency",
+        currency: options.currency ?? "USD",
+    }).format(amount);
+}
+
+export function formatCompactCurrency(amount: number, options: { currency?: string } = {}) {
+    return new Intl.NumberFormat("en-US", {
+        style: "currency",
+        currency: options.currency ?? "USD",
+        notation: "compact",
+    }).format(amount);
+}
+
+export function formatCurrencyDifference(amount: number, options: { currency?: string } = {}) {
+    const prefix = amount >= 0 ? "+" : "";
+    return prefix + formatCurrency(amount, options);
+}
+
+export function getCurrencyColorClass(amount: number) {
+    if (amount > 0) return "text-success";
+    if (amount < 0) return "text-destructive";
+    return "text-muted-foreground";
+}
 
 export function Currency({
     amount,
@@ -46,10 +73,10 @@ export function CurrencyDisplay({
     label,
     className,
     ...props
-}: CurrencyDisplayProps & { label: React.ReactNode }) {
+}: CurrencyDisplayProps & { label?: React.ReactNode }) {
     return (
         <div className={cn("space-y-1", className)}>
-            <div className="text-sm text-muted-foreground">{label}</div>
+            {label && <div className="text-sm text-muted-foreground">{label}</div>}
             <Currency
                 amount={amount}
                 className="text-2xl font-semibold tracking-tight"
