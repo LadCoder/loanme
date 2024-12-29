@@ -39,11 +39,6 @@ export default async function LoanPage({ params }: PageProps) {
             <div className="flex items-center justify-between">
                 <h1 className="text-3xl font-bold">Loan Details</h1>
                 <div className="flex items-center gap-4">
-                    <div className="flex items-center gap-2">
-                        <Currency amount={loan.amount} currency={loan.currency} />
-                        <span className="text-muted-foreground">•</span>
-                        {getStatusDisplay(loan.status)}
-                    </div>
                     <LoanActions
                         loanId={loan.id}
                         status={loan.status}
