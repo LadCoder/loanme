@@ -1,18 +1,18 @@
+import React from "react";
+import { Card, CardContent, CardHeader, CardTitle } from "~/app/_components/ui/card";
+import { Currency } from "~/app/_components/ui/currency";
+import { getStatusDisplay } from "~/utils/loan";
+import { formatDate } from "~/utils/date";
 import { auth } from "@clerk/nextjs/server";
 import { db } from "~/server/db";
 import { loans } from "~/server/db/schema";
 import { eq } from "drizzle-orm";
 import { notFound } from "next/navigation";
-import { Card, CardContent, CardHeader, CardTitle } from "~/app/_components/ui/card";
-import { Currency } from "~/app/_components/ui/currency";
-import { getStatusDisplay } from "~/utils/loan";
-import { formatDate } from "~/utils/date";
+import { LoanPaymentHistory } from "~/app/_components/loans/loan-payment-history";
 import { LoanActions } from "~/app/_components/loans/loan-actions";
 
 interface PageProps {
-    params: Promise<{
-        id: string;
-    }>;
+    params: Promise<{ id: string }> | { id: string };
 }
 
 export default async function LoanPage({ params }: PageProps) {
@@ -35,7 +35,7 @@ export default async function LoanPage({ params }: PageProps) {
     }
 
     return (
-        <div className="space-y-6 p-6">
+        <div className="container mx-auto space-y-6 py-8">
             <div className="flex items-center justify-between">
                 <h1 className="text-3xl font-bold">Loan Details</h1>
                 <div className="flex items-center gap-4">
@@ -105,11 +105,7 @@ export default async function LoanPage({ params }: PageProps) {
                         <CardTitle>Payment History</CardTitle>
                     </CardHeader>
                     <CardContent>
-                        <div className="rounded-lg border bg-background/50 p-8 text-center">
-                            <p className="text-sm text-muted-foreground">
-                                No payments have been made yet
-                            </p>
-                        </div>
+                        <LoanPaymentHistory loanId={loan.id} />
                     </CardContent>
                 </Card>
             </div>

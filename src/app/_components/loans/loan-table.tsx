@@ -82,22 +82,22 @@ export function LoanTable({ userType }: LoanTableProps) {
     const [sortKey, setSortKey] = React.useState<keyof Loan>(searchParams.get("sort") as keyof Loan || "startDate");
     const [sortOrder, setSortOrder] = React.useState<"asc" | "desc">(searchParams.get("order") as "asc" | "desc" || "desc");
 
-    const fetchData = React.useCallback(async () => {
-        setIsLoading(true);
-        try {
-            const response = await fetch(`/api/loans/${userType}?${searchParams.toString()}`);
-            const data = await response.json();
-            setLoans(data.loans);
-            setUsers(data.users);
-        } catch (error) {
-            console.error('Failed to fetch loans:', error);
-        }
-        setIsLoading(false);
-    }, [searchParams, userType]);
-
     React.useEffect(() => {
+        const fetchData = async () => {
+            setIsLoading(true);
+            try {
+                const response = await fetch(`/api/loans/list/${userType}?${searchParams.toString()}`);
+                const data = await response.json();
+                setLoans(data.loans);
+                setUsers(data.users);
+            } catch (error) {
+                console.error('Failed to fetch loans:', error);
+            }
+            setIsLoading(false);
+        };
+
         fetchData();
-    }, [fetchData]);
+    }, [searchParams, userType]);
 
     const getUserName = (userId: string) => {
         const user = users.find(u => u.id === userId);
