@@ -1,66 +1,21 @@
 import * as React from "react";
 import { cn } from "~/lib/utils";
 
-export interface CurrencyDisplayProps {
+interface CurrencyProps {
     amount: number;
-    compact?: boolean;
-    showDifference?: boolean;
-    className?: string;
     currency?: string;
+    className?: string;
 }
 
-export function formatCurrency(amount: number, options: { currency?: string } = {}) {
-    return new Intl.NumberFormat("en-US", {
+export function Currency({ amount, currency = "AUD", className }: CurrencyProps) {
+    const formatter = new Intl.NumberFormat("en-AU", {
         style: "currency",
-        currency: options.currency ?? "USD",
-    }).format(amount);
-}
-
-export function formatCompactCurrency(amount: number, options: { currency?: string } = {}) {
-    return new Intl.NumberFormat("en-US", {
-        style: "currency",
-        currency: options.currency ?? "USD",
-        notation: "compact",
-    }).format(amount);
-}
-
-export function formatCurrencyDifference(amount: number, options: { currency?: string } = {}) {
-    const prefix = amount >= 0 ? "+" : "";
-    return prefix + formatCurrency(amount, options);
-}
-
-export function getCurrencyColorClass(amount: number) {
-    if (amount > 0) return "text-success";
-    if (amount < 0) return "text-destructive";
-    return "text-muted-foreground";
-}
-
-export function Currency({
-    amount,
-    compact = false,
-    showDifference = false,
-    className,
-    ...options
-}: CurrencyDisplayProps) {
-    let formattedValue: string;
-
-    if (showDifference) {
-        formattedValue = formatCurrencyDifference(amount, options);
-    } else if (compact) {
-        formattedValue = formatCompactCurrency(amount, options);
-    } else {
-        formattedValue = formatCurrency(amount, options);
-    }
+        currency,
+    });
 
     return (
-        <span
-            className={cn(
-                "tabular-nums",
-                showDifference && getCurrencyColorClass(amount),
-                className
-            )}
-        >
-            {formattedValue}
+        <span className={className}>
+            {formatter.format(amount)}
         </span>
     );
 }
@@ -71,61 +26,17 @@ export function Currency({
 export function CurrencyDisplay({
     amount,
     label,
+    currency,
     className,
-    ...props
-}: CurrencyDisplayProps & { label?: React.ReactNode }) {
+}: CurrencyProps & { label?: React.ReactNode }) {
     return (
         <div className={cn("space-y-1", className)}>
             {label && <div className="text-sm text-muted-foreground">{label}</div>}
             <Currency
                 amount={amount}
+                currency={currency}
                 className="text-2xl font-semibold tracking-tight"
-                {...props}
             />
         </div>
-    );
-}
-
-/**
- * Displays a currency value with a subtle background
- */
-export function CurrencyBadge({
-    amount,
-    className,
-    ...props
-}: CurrencyDisplayProps) {
-    return (
-        <span
-            className={cn(
-                "inline-flex items-center rounded-md bg-muted/50 px-2 py-1 text-sm font-medium ring-1 ring-inset ring-muted/60",
-                className
-            )}
-        >
-            <Currency amount={amount} {...props} />
-        </span>
-    );
-}
-
-/**
- * Displays a currency difference with a colored background
- */
-export function CurrencyDifferenceBadge({
-    amount,
-    className,
-    ...props
-}: CurrencyDisplayProps) {
-    const isPositive = amount >= 0;
-    return (
-        <span
-            className={cn(
-                "inline-flex items-center rounded-md px-2 py-1 text-sm font-medium ring-1 ring-inset",
-                isPositive
-                    ? "bg-success-500/10 text-success-700 ring-success-500/20 dark:bg-success-500/10 dark:text-success-400 dark:ring-success-500/20"
-                    : "bg-destructive/10 text-destructive-700 ring-destructive/20 dark:bg-destructive/10 dark:text-destructive-400 dark:ring-destructive/20",
-                className
-            )}
-        >
-            <Currency amount={amount} showDifference {...props} />
-        </span>
     );
 } 

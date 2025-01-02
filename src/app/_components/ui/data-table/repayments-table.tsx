@@ -1,48 +1,30 @@
-'use client';
+"use client";
 
 import * as React from "react";
-import { Calendar, DollarSign } from "lucide-react";
-import { formatDate } from "~/utils/date";
+import { Calendar } from "lucide-react";
 import { DataTable } from "~/app/_components/ui/data-table";
-import { Currency } from "~/app/_components/ui/currency";
 import {
     createDateColumn,
     createCurrencyColumn,
     createStatusColumn,
 } from "~/app/_components/ui/data-table/columns";
+import { formatDate } from "~/utils/date";
 
-interface Payment {
+interface Repayment {
     id: number;
+    loanId: number;
     amount: number;
     dueDate: string;
     paidDate: string | null;
-    status: "PENDING" | "PAID" | "LATE" | "MISSED";
+    status: string;
     note: string | null;
 }
 
-interface LoanPaymentHistoryProps {
-    loanId: number;
+interface RepaymentsTableProps {
+    repayments: Repayment[];
 }
 
-export function LoanPaymentHistory({ loanId }: LoanPaymentHistoryProps) {
-    const [payments, setPayments] = React.useState<Payment[]>([]);
-    const [isLoading, setIsLoading] = React.useState(true);
-
-    React.useEffect(() => {
-        const fetchData = async () => {
-            try {
-                const response = await fetch(`/api/loans/${loanId}/repayments`);
-                const data = await response.json();
-                setPayments(data.repayments);
-            } catch (error) {
-                console.error("Failed to fetch payments:", error);
-            }
-            setIsLoading(false);
-        };
-
-        fetchData();
-    }, [loanId]);
-
+export function RepaymentsTable({ repayments }: RepaymentsTableProps) {
     const columns = React.useMemo(
         () => [
             createDateColumn("dueDate", "Due Date"),
@@ -81,13 +63,12 @@ export function LoanPaymentHistory({ loanId }: LoanPaymentHistoryProps) {
 
     return (
         <DataTable
-            data={payments}
+            data={repayments}
             columns={columns}
-            loading={isLoading}
             emptyState={{
                 icon: Calendar,
-                title: "No payments found",
-                description: "No payments have been made yet.",
+                title: "No repayments found",
+                description: "You don't have any repayments to display.",
             }}
         />
     );
