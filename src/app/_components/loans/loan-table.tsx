@@ -1,15 +1,16 @@
 'use client';
 
 import React from "react";
-import { Table, TableBody, TableCell, TableRow } from "~/app/_components/ui/table";
-import { LoanTableHeader } from "./loan-table-header";
-import { LoanTableSkeleton } from "./loan-table-skeleton";
+import { DataTable, type Column } from "~/app/_components/ui/data-table";
 import { Currency } from "~/app/_components/ui/currency";
 import { getStatusDisplay } from "~/utils/loan";
+import type { LoanStatus } from "~/utils/loan";
 import { formatDate } from "~/utils/date";
-import { User } from "lucide-react";
+import { User, Ban } from "lucide-react";
 import Link from "next/link";
-import { useSearchParams } from "next/navigation";
+import { useSearchParams, useRouter } from "next/navigation";
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "~/app/_components/ui/table";
+import { Skeleton } from "~/app/_components/ui/skeleton";
 
 interface LoanTableProps {
     userType: "lender" | "borrower";
@@ -19,7 +20,7 @@ interface Loan {
     id: number;
     amount: number;
     currency: string;
-    status: string;
+    status: LoanStatus;
     startDate: string | null;
     duration: number;
     preferredSchedule: string;
@@ -34,11 +35,52 @@ interface User {
     emailAddresses: { emailAddress: string }[];
 }
 
+function LoadingState() {
+    return (
+        <div className="rounded-xl bg-muted/50">
+            <Table>
+                <TableHeader>
+                    <TableRow>
+                        <TableHead>Amount</TableHead>
+                        <TableHead>Borrower</TableHead>
+                        <TableHead>Status</TableHead>
+                        <TableHead>Start Date</TableHead>
+                        <TableHead>Duration</TableHead>
+                        <TableHead>Schedule</TableHead>
+                    </TableRow>
+                </TableHeader>
+                <TableBody>
+                    {Array.from({ length: 5 }).map((_, i) => (
+                        <TableRow key={i}>
+                            <TableCell><Skeleton className="h-4 w-20" /></TableCell>
+                            <TableCell>
+                                <div className="flex items-center gap-2">
+                                    <div className="rounded-full bg-primary/10 p-1">
+                                        <Skeleton className="h-3 w-3 rounded-full" />
+                                    </div>
+                                    <Skeleton className="h-4 w-32" />
+                                </div>
+                            </TableCell>
+                            <TableCell><Skeleton className="h-4 w-16" /></TableCell>
+                            <TableCell><Skeleton className="h-4 w-24" /></TableCell>
+                            <TableCell><Skeleton className="h-4 w-16" /></TableCell>
+                            <TableCell><Skeleton className="h-4 w-20" /></TableCell>
+                        </TableRow>
+                    ))}
+                </TableBody>
+            </Table>
+        </div>
+    );
+}
+
 export function LoanTable({ userType }: LoanTableProps) {
     const searchParams = useSearchParams();
+    const router = useRouter();
     const [loans, setLoans] = React.useState<Loan[]>([]);
     const [users, setUsers] = React.useState<User[]>([]);
     const [isLoading, setIsLoading] = React.useState(true);
+    const [sortKey, setSortKey] = React.useState<keyof Loan>(searchParams.get("sort") as keyof Loan || "startDate");
+    const [sortOrder, setSortOrder] = React.useState<"asc" | "desc">(searchParams.get("order") as "asc" | "desc" || "desc");
 
     const fetchData = React.useCallback(async () => {
         setIsLoading(true);
@@ -64,57 +106,85 @@ export function LoanTable({ userType }: LoanTableProps) {
             : user?.emailAddresses[0]?.emailAddress ?? "Unknown User";
     };
 
+    const handleSort = (key: keyof Loan) => {
+        const newOrder = key === sortKey && sortOrder === "desc" ? "asc" : "desc";
+        setSortKey(key);
+        setSortOrder(newOrder);
+
+        const params = new URLSearchParams(searchParams.toString());
+        params.set("sort", key);
+        params.set("order", newOrder);
+        router.push(`?${params.toString()}`);
+    };
+
+    const columns = React.useMemo<Column<Loan>[]>(() => [
+        {
+            key: "amount",
+            header: "Amount",
+            cell: (_: unknown, row: Loan) => (
+                <Link href={`/loans/${row.id}`} className="block hover:underline">
+                    <Currency amount={row.amount} currency={row.currency} />
+                </Link>
+            ),
+            sortable: true,
+        },
+        {
+            key: "borrowerId",
+            header: userType === "lender" ? "Borrower" : "Lender",
+            cell: (_: unknown, row: Loan) => (
+                <div className="flex items-center gap-2">
+                    <div className="rounded-full bg-primary/10 p-1">
+                        <User className="h-3 w-3 text-primary" />
+                    </div>
+                    <span className="truncate">
+                        {getUserName(userType === "lender" ? row.borrowerId : row.lenderId)}
+                    </span>
+                </div>
+            ),
+        },
+        {
+            key: "status",
+            header: "Status",
+            cell: (_: unknown, row: Loan) => getStatusDisplay(row.status),
+            sortable: true,
+        },
+        {
+            key: "startDate",
+            header: "Start Date",
+            cell: (_: unknown, row: Loan) => row.startDate ? formatDate(row.startDate) : "Not started",
+            sortable: true,
+        },
+        {
+            key: "duration",
+            header: "Duration",
+            cell: (_: unknown, row: Loan) => `${row.duration} months`,
+            sortable: true,
+        },
+        {
+            key: "preferredSchedule",
+            header: "Schedule",
+            cell: (_: unknown, row: Loan) => row.preferredSchedule.toLowerCase(),
+            sortable: true,
+        },
+    ], [userType, getUserName]);
+
+    if (isLoading) {
+        return <LoadingState />;
+    }
+
     return (
-        <div className="overflow-hidden rounded-xl bg-muted/50">
-            <Table>
-                <LoanTableHeader userType={userType} />
-                {isLoading ? (
-                    <LoanTableSkeleton />
-                ) : (
-                    <TableBody>
-                        {loans.map((loan) => (
-                            <TableRow key={loan.id} className="hover:bg-muted/50">
-                                <TableCell className="w-[120px] whitespace-nowrap">
-                                    <Link
-                                        href={`/loans/${loan.id}`}
-                                        className="block hover:underline"
-                                    >
-                                        <Currency
-                                            amount={loan.amount}
-                                            currency={loan.currency}
-                                        />
-                                    </Link>
-                                </TableCell>
-                                <TableCell className="w-[200px] whitespace-nowrap">
-                                    <div className="flex items-center gap-2">
-                                        <div className="rounded-full bg-primary/10 p-1">
-                                            <User className="h-3 w-3 text-primary" />
-                                        </div>
-                                        <span className="truncate">
-                                            {getUserName(userType === "lender" ? loan.borrowerId : loan.lenderId)}
-                                        </span>
-                                    </div>
-                                </TableCell>
-                                <TableCell className="w-[100px] whitespace-nowrap">{getStatusDisplay(loan.status)}</TableCell>
-                                <TableCell className="w-[120px] whitespace-nowrap">
-                                    {loan.startDate ? formatDate(loan.startDate) : "Not started"}
-                                </TableCell>
-                                <TableCell className="w-[100px] whitespace-nowrap">{loan.duration} months</TableCell>
-                                <TableCell className="w-[100px] whitespace-nowrap capitalize">
-                                    {loan.preferredSchedule?.toLowerCase()}
-                                </TableCell>
-                            </TableRow>
-                        ))}
-                        {loans.length === 0 && !isLoading && (
-                            <TableRow className="hover:bg-transparent">
-                                <TableCell colSpan={6} className="text-center">
-                                    No loans found
-                                </TableCell>
-                            </TableRow>
-                        )}
-                    </TableBody>
-                )}
-            </Table>
-        </div>
+        <DataTable
+            data={loans}
+            columns={columns}
+            onSort={handleSort}
+            sortKey={sortKey}
+            sortOrder={sortOrder}
+            emptyState={{
+                icon: Ban,
+                title: "No loans found",
+                description: "There are no loans to display at the moment."
+            }}
+            className="rounded-xl bg-muted/50"
+        />
     );
 } 
