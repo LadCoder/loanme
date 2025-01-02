@@ -62,14 +62,16 @@ export function RepaymentsTable({ repayments }: RepaymentsTableProps) {
     );
 
     return (
-        <DataTable
-            data={repayments}
-            columns={columns}
-            emptyState={{
-                icon: Calendar,
-                title: "No repayments found",
-                description: "You don't have any repayments to display.",
-            }}
-        />
+        <div className="rounded-md bg-muted/50">
+            <DataTable
+                data={repayments}
+                columns={columns}
+                emptyState={{
+                    icon: Calendar,
+                    title: "No repayments found",
+                    description: "You don't have any repayments to display.",
+                }}
+            />
+        </div>
     );
 } 
