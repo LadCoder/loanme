@@ -99,12 +99,12 @@ export function LoanTable({ userType }: LoanTableProps) {
         fetchData();
     }, [searchParams, userType]);
 
-    const getUserName = (userId: string) => {
+    const getUserName = React.useCallback((userId: string) => {
         const user = users.find(u => u.id === userId);
         return user?.firstName && user?.lastName
             ? `${user.firstName} ${user.lastName}`
             : user?.emailAddresses[0]?.emailAddress ?? "Unknown User";
-    };
+    }, [users]);
 
     const handleSort = (key: keyof Loan) => {
         const newOrder = key === sortKey && sortOrder === "desc" ? "asc" : "desc";

@@ -30,7 +30,7 @@ export function createDateColumn<T>(
     return {
         accessorKey,
         header,
-        cell: (value) => {
+        cell: (value: string | null) => {
             if (options.cell) {
                 return options.cell(value);
             }
@@ -48,7 +48,7 @@ export function createCurrencyColumn<T>(
     return {
         accessorKey,
         header,
-        cell: (value) => {
+        cell: (value: number) => {
             if (options.cell) {
                 return options.cell(value);
             }
@@ -66,7 +66,7 @@ export function createStatusColumn<T>(
     return {
         accessorKey,
         header,
-        cell: (value) => {
+        cell: (value: string) => {
             const variant = options.getVariant?.(value) ?? "default";
             const label = options.transform?.(value) ?? value;
             return <Badge variant={variant}>{label}</Badge>;

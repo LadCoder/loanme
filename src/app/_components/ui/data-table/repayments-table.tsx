@@ -54,7 +54,7 @@ export function RepaymentsTable({ repayments }: RepaymentsTableProps) {
                         late: "Late",
                         missed: "Missed",
                     };
-                    return labels[status.toLowerCase()] || status;
+                    return labels[status.toLowerCase()] ?? status;
                 },
             }),
         ],

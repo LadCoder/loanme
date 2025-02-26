@@ -101,7 +101,7 @@ export function DataTable<T>({
                     {data.map((row, rowIndex) => (
                         <TableRow key={rowIndex}>
                             {columns.map((column) => {
-                                const value = row[column.key];
+                                const value = row[column.accessorKey];
                                 return (
                                     <TableCell
                                         key={String(column.key)}

@@ -105,7 +105,7 @@ export default async function LoanPage({ params }: PageProps) {
                         <CardTitle>Payment History</CardTitle>
                     </CardHeader>
                     <CardContent>
-                        <LoanPaymentHistory loanId={loan.id} />
+                        <LoanPaymentHistory loanId={loan.id} totalLoanAmount={loan.amount} />
                     </CardContent>
                 </Card>
             </div>

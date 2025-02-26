@@ -6,9 +6,7 @@ import { db } from "~/server/db";
 import { loans, repayments } from "~/server/db/schema";
 
 type RouteParams = {
-    params: {
-        id: string;
-    };
+    params: Promise<{ id: string }> | { id: string };
 };
 
 export async function GET(
@@ -21,7 +19,7 @@ export async function GET(
             return new NextResponse("Unauthorized", { status: 401 });
         }
 
-        const { id } = params;
+        const { id } = await params;
         const loanId = parseInt(id);
         if (isNaN(loanId)) {
             return new NextResponse("Invalid loan ID", { status: 400 });
@@ -55,7 +53,8 @@ export async function GET(
 
 export async function POST(
     request: Request,
-    { params }: RouteParams
+    params: Promise<{ id: string }> | { id: string }
+
 ) {
     try {
         const { userId } = await auth();
@@ -63,7 +62,7 @@ export async function POST(
             return new NextResponse("Unauthorized", { status: 401 });
         }
 
-        const { id } = params;
+        const { id } = await params;
         const loanId = parseInt(id);
         if (isNaN(loanId)) {
             return new NextResponse("Invalid loan ID", { status: 400 });

@@ -8,7 +8,8 @@ export const dynamic = 'force-dynamic';
 
 export async function GET(
     request: Request,
-    { params }: { params: { id: string } }
+    params: Promise<{ id: string }> | { id: string }
+
 ) {
     try {
         const { userId } = await auth();
